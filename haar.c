@@ -1,5 +1,7 @@
 #include <string.h>
 
+//#define dhamt2_initial dhamt2_ 
+#define dhamt2_loop dhamt2_ 
 
 /*
 c     Compute 2D Haar transform of a matrix
@@ -23,7 +25,7 @@ c     mt matrix transform
 c     2 2D
 */
 
-void dhamt2_( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+void dhamt2_initial( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
     int i, j, k;
 
     /* dim 1 */
@@ -41,6 +43,7 @@ void dhamt2_( double* restrict A, double* restrict B, double* restrict W, int M,
             j++;
         }
     }
+    
     /* dim 2 */
     /* First term of the sum */
     k = i = 0;
@@ -69,4 +72,33 @@ void dhamt2_( double* restrict A, double* restrict B, double* restrict W, int M,
             B[i*ldb + j] /= 2;
         }
     }
+}
+
+void dhamt2_loop( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+    int i, j;
+
+    /* dim 1 */
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i++ ){ 
+            W[ j*ldb + i] = ( A[j*lda + 2*i] + A[ j*lda + 2*i+1] ) / 2.0;
+        }
+        for( i = 0 ; i < N / 2 ; i++ ){ 
+            W[ j*ldb + i + N/2] = ( A[j*lda + 2*i] - A[ j*lda + 2*i+1] ) / 2.0;
+        }
+    }
+    
+    /* dim 2 */
+    
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i++ ){
+            B[i + j * ldb] = ( W[ i+ 2*j*lda ] + W[ i+ (2*j+1)*lda] ) / 2.0;
+        }
+    }
+    
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N ; i++ ){
+            B[i + (j+N/2) * ldb ] = ( W[ i+ 2*j*lda ] - W[ i+ (2*j+1)*lda] ) / 2.0;
+        }
+    }
+    
 }

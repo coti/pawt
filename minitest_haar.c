@@ -60,13 +60,13 @@ int main( int argc, char** argv ){
     
     dillrandom( mat, M, N, N, cond, work, wor2 );
     //    printmatrixOctave( mat, M, N );
-    //printmatrix( mat, M, N );
+    printmatrix( mat, M, N );
 
     /* Haar transform */
 
     dhamt2_( mat, work, wor2, M, N, N, N );
     //    printmatrixOctave( work, M, N );
-    // printmatrix( work, M, N );
+    printmatrix( work, M, N );
 
     free( mat );
     free( work );
