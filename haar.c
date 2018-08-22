@@ -1,7 +1,7 @@
 #include <string.h>
 
-#define dhamt2_initial dhamt2_ 
-//#define dhamt2_loop dhamt2_ 
+//#define dhamt2_initial dhamt2_ 
+#define dhamt2_loop dhamt2_ 
 
 /*
 c     Compute 2D Haar transform of a matrix
@@ -92,13 +92,9 @@ void dhamt2_loop( double* restrict A, double* restrict B, double* restrict W, in
     for( j = 0 ; j < M / 2 ; j++ ){ 
         for( i = 0 ; i < N ; i++ ){
             B[i + j * ldb] = ( W[ i+ 2*j*lda ] + W[ i+ (2*j+1)*lda] ) / 2.0;
-        }
-    }
-    
-    for( j = 0 ; j < M/2 ; j++ ) {
-        for( i = 0 ; i < N ; i++ ){
             B[i + (j+M/2) * ldb ] = ( W[ i+ 2*j*lda ] - W[ i + (2*j+1)*lda] ) / 2.0;
+
         }
     }
-    
+        
 }
