@@ -1,7 +1,10 @@
 #include <string.h>
 
+#include <x86intrin.h>
+
 //#define dhamt2_initial dhamt2_ 
-#define dhamt2_loop dhamt2_ 
+//#define dhamt2_loop dhamt2_ 
+#define dhamt2_avx dhamt2_ 
 
 /*
 c     Compute 2D Haar transform of a matrix
@@ -25,7 +28,11 @@ c     mt matrix transform
 c     2 2D
 */
 
+#ifdef  __cplusplus
+void dhamt2_initial( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
 void dhamt2_initial( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
     int i, j, k;
 
     /* dim 1 */
@@ -74,7 +81,11 @@ void dhamt2_initial( double* restrict A, double* restrict B, double* restrict W,
     }
 }
 
+#ifdef  __cplusplus
+void dhamt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
 void dhamt2_loop( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
     int i, j;
 
     /* dim 1 */
@@ -93,8 +104,56 @@ void dhamt2_loop( double* restrict A, double* restrict B, double* restrict W, in
         for( i = 0 ; i < N ; i++ ){
             B[i + j * ldb] = ( W[ i+ 2*j*lda ] + W[ i+ (2*j+1)*lda] ) / 2.0;
             B[i + (j+M/2) * ldb ] = ( W[ i+ 2*j*lda ] - W[ i + (2*j+1)*lda] ) / 2.0;
-
         }
     }
         
+}
+
+/* TODO handle case when the matrix is too small */
+     
+void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m256d w, a1, a2;
+    const __m256d deux = _mm256_set1_pd( 0.5 );
+    __m256i stride =   _mm256_set_epi64x( 3*sizeof( double ), 2*sizeof( double ),
+                                          sizeof( double ), 0 );
+
+    /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    /* dim 1 */
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=4 ){ 
+            a1 = _mm256_i64gather_pd( &A[j*lda + 2*i], stride, 2 );
+            a2 = _mm256_i64gather_pd( &A[j*lda + 2*i + 1], stride, 2 );
+            w = _mm256_add_pd( a1, a2 );
+            w = _mm256_mul_pd( w, deux );
+            _mm256_storeu_pd( &W[ j*ldb + i], w );             
+        }
+        for( i = 0 ; i < N / 2 ; i+=4 ){ 
+            a1 = _mm256_i64gather_pd( &A[j*lda + 2*i], stride, 2 );
+            a2 = _mm256_i64gather_pd( &A[j*lda + 2*i + 1], stride, 2 );
+            w = _mm256_sub_pd( a1, a2 );
+            w = _mm256_mul_pd( w, deux );
+            _mm256_storeu_pd( &W[ j*ldb + i + N/2], w ); 
+       }
+    }
+    
+    /* dim 2 */
+    
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i+=4 ){
+            a1 = _mm256_i64gather_pd( &W[ 2* j*lda + i], stride, 2 );
+            a2 = _mm256_i64gather_pd( &A[( 2*j+1)*lda + i], stride, 2 );
+            w = _mm256_add_pd( a1, a2 );
+            w = _mm256_mul_pd( w, deux );
+            _mm256_storeu_pd( &B[ j*ldb + i ], w ); 
+            
+            a1 = _mm256_i64gather_pd( &W[ 2*j*lda + i], stride, 2 );
+            a2 = _mm256_i64gather_pd( &W[ (2*(j+1))*lda + i], stride, 2 );
+            w = _mm256_sub_pd( a1, a2 );
+            w = _mm256_mul_pd( w, deux );
+            _mm256_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
+        }
+    }
+    
 }
