@@ -4,7 +4,8 @@
 
 //#define dhamt2_initial dhamt2_ 
 //#define dhamt2_loop dhamt2_
-#define dhamt2_avx dhamt2_ 
+//#define dhamt2_avx dhamt2_ 
+#define dhamt2_sse dhamt2_ 
 
 /*
 c     Compute 2D Haar transform of a matrix
@@ -155,3 +156,47 @@ void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     }
     
 }
+
+ void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+     int i, j;
+     __m128d w, a1, a2;
+    const __m128d deux = _mm_set1_pd( 0.5 );
+    
+     /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    /* dim 1 */
+
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=2 ){ 
+            a1 = _mm_set_pd( A[j*lda + 2*i + 2], A[j*lda + 2*i] );
+            a2 = _mm_set_pd( A[j*lda + 2*i + 3], A[j*lda + 2*i + 1] );
+            w = _mm_add_pd( a1, a2 );
+            w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &W[ j*ldb + i], w );             
+        }
+         for( i = 0 ; i < N / 2 ; i+=2 ){ 
+            a1 = _mm_set_pd( A[j*lda + 2*i + 2], A[j*lda + 2*i] );
+            a2 = _mm_set_pd( A[j*lda + 2*i + 3], A[j*lda + 2*i + 1] );
+            w = _mm_sub_pd( a1, a2 );
+            w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &W[ j*ldb + i + N/2], w ); 
+       }
+   }
+
+    /* dim 2 */
+
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i+=2 ){
+            a1 = _mm_load_pd( &W[ 2 * j * lda + i] );
+            a2 = _mm_load_pd( &W[ ( 2 * j + 1 ) * lda + i ] );
+            w = _mm_add_pd( a1, a2 );
+            w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &B[ j*ldb + i ], w ); 
+
+            w = _mm_sub_pd( a1, a2 );
+            w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
+        }
+    }
+
+ }
