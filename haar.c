@@ -4,8 +4,9 @@
 
 //#define dhamt2_initial dhamt2_ 
 //#define dhamt2_loop dhamt2_
-#define dhamt2_avx dhamt2_ 
+//#define dhamt2_avx dhamt2_ 
 //#define dhamt2_sse dhamt2_ 
+#define dhamt2_fma dhamt2_ 
 
 /*
 c     Compute 2D Haar transform of a matrix
@@ -197,3 +198,45 @@ void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     }
 
  }
+ 
+/* TODO handle case when the matrix is too small */
+     
+void dhamt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m256d w, a1, a2;
+    const __m256d deux = _mm256_set1_pd( 0.5 );
+    const __m256d moinsdeux = _mm256_set1_pd( -0.5 );
+
+    /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    /* dim 1 */
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=4 ){ 
+            a1 = _mm256_set_pd( A[j*lda + 2*i + 6], A[j*lda + 2*i + 4], A[j*lda + 2*i + 2], A[j*lda + 2*i] );
+            a2 = _mm256_set_pd( A[j*lda + 2*i + 7], A[j*lda + 2*i + 5], A[j*lda + 2*i + 3], A[j*lda + 2*i + 1] );
+
+            w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
+            _mm256_storeu_pd( &W[ j*ldb + i], w );             
+            
+            w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+            _mm256_storeu_pd( &W[ j*ldb + i + N/2], w ); 
+        }
+    }
+    
+    /* dim 2 */
+
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i+=4 ){
+            a1 = _mm256_loadu_pd(  &W[ 2* j*lda + i] );
+            a2 =  _mm256_loadu_pd(  &W[ ( 2 * j + 1 ) *lda + i] );
+
+            w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
+            _mm256_storeu_pd( &B[ j*ldb + i ], w ); 
+            
+            w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+            _mm256_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
+        }
+    }
+    
+}
+
