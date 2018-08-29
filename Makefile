@@ -1,8 +1,8 @@
 CC = gcc
-CCOPT = -Wall -O3
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI 
 LD = gcc
 LDOPT =
-LIBS =  -llapacke -lopenblas
+LIBS =  -llapacke -lopenblas -lpapi
 
 all: minitest_haar
 
