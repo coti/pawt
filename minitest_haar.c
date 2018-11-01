@@ -19,7 +19,7 @@
 
 void ddiago( double* A, int M, int N, double cond );
 void dillrandom( double* A, int M, int N, int lda, double cond, double* work, double* work2 );
-void dhamt2_( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void DHAMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 void dgemm_( char*, char*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int* ); 
 
 
@@ -107,7 +107,7 @@ int main( int argc, char** argv ){
 #endif
     /* Haar transform */
     for( i = 0 ; i < NUMRUN ; i++ ) {
-        dhamt2_( mat, work, wor2, M, N, N, N );    
+        DHAMT( mat, work, wor2, M, N, N, N );    
         //    printmatrixOctave( work, M, N );
         //         printmatrix( work, M, N );
     }    
