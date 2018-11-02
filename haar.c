@@ -149,7 +149,7 @@ void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     
 }
 
- void dhamt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+void dhamt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
     int i, j;
     __m256d w, a1, a2;
     const __m256d deux = _mm256_set1_pd( 0.5 );
@@ -192,7 +192,8 @@ void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     }
     
 }
- void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+ 
+void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
      int i, j;
      __m128d w, a1, a2;
     const __m128d deux = _mm_set1_pd( 0.5 );
@@ -277,3 +278,138 @@ void dhamt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     
 }
 
+#define BLOCKl 4
+#define BLOCKc 512
+ 
+void dhamt2_fma_block( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j, a, b;
+    __m256d w, a1, a2;
+    const __m256d deux = _mm256_set1_pd( 0.5 );
+    const __m256d moinsdeux = _mm256_set1_pd( -0.5 );
+
+    /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    /* dim 1 */
+
+    /* First half */
+
+    for( a = 0 ; a < M ; a += BLOCKl ){
+        for( b = 0 ; b < N/2 ; b += BLOCKc ){
+        
+            for( j = 0 ; j < BLOCKl ; j++ ) {
+                for( i = 0 ; i < BLOCKc ; i+=4 ){
+                    
+                    a1 = _mm256_set_pd( A[(a+j)*lda + 2*(b+i) + 6], A[(a+j)*lda + 2*(b+i) + 4], A[(a+j)*lda + 2*(b+i) + 2], A[(a+j)*lda + 2*(b+i)] );
+                    a2 = _mm256_set_pd( A[(a+j)*lda + 2*(b+i) + 7], A[(a+j)*lda + 2*(b+i) + 5], A[(a+j)*lda + 2*(b+i) + 3], A[(a+j)*lda + 2*(b+i) + 1] );
+                    
+                    w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
+                    _mm256_storeu_pd( &W[ j*ldb + (b+i)], w );             
+                }
+            }
+        }
+    }
+    
+    /* Dim 2, first half */
+    
+    for( a = 0 ; a < M/2 ; a += BLOCKl ){
+        for( b = 0 ; b < N ; b += BLOCKc ){
+            
+            for( j = 0 ; j < BLOCKl ; j++ ) {
+                for( i = 0 ; i < BLOCKc ; i+=4 ){
+                    
+                    a1 = _mm256_loadu_pd(  &W[ 2* (a+j)*lda + (b+i)] );
+                    a2 =  _mm256_loadu_pd(  &W[ ( 2 * (a+j) + 1 ) *lda + (b+i)] );
+                    
+                    w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
+                    _mm256_storeu_pd( &B[ j*ldb + (b+i) ], w ); 
+               }
+            }
+        }
+    }
+
+    /* Dim 1, second half */
+    
+    for( a = 0 ; a < M ; a += BLOCKl ){        
+        for( b = 0 ; b < N/2 ; b += BLOCKc ){
+            
+            for( j = 0 ; j < BLOCKl ; j++ ) {
+                for( i = 0 ; i < BLOCKc ; i+=4 ){
+                    
+                    a1 = _mm256_set_pd( A[(a+j)*lda + 2*(b+i) + 6], A[(a+j)*lda + 2*(b+i) + 4], A[(a+j)*lda + 2*(b+i) + 2], A[(a+j)*lda + 2*(b+i)] );
+                    a2 = _mm256_set_pd( A[(a+j)*lda + 2*(b+i) + 7], A[(a+j)*lda + 2*(b+i) + 5], A[(a+j)*lda + 2*(b+i) + 3], A[(a+j)*lda + 2*(b+i) + 1] );
+                    
+                    w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+                    _mm256_storeu_pd( &W[ (a+j)*ldb + (b+i) + N/2], w ); 
+                }
+            }
+        }
+    }
+     
+     /* Dim 2, second half */
+    
+    for( a = 0 ; a < M/2 ; a += BLOCKl ){
+        for( b = 0 ; b < N ; b += BLOCKc ){
+            
+            for( j = 0 ; j < BLOCKl ; j++ ) {
+                for( i = 0 ; i < BLOCKc ; i+=4 ){
+                    
+                    a1 = _mm256_loadu_pd(  &W[ 2* (a+j)*lda + i] );
+                    a2 =  _mm256_loadu_pd(  &W[ ( 2 * (a+j) + 1 ) *lda + (b+i)] );
+                    
+                    w =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+                    _mm256_storeu_pd( &B[ ((a+j)+M/2)*ldb + (b+i) ], w ); 
+                }
+            }
+        }
+    }
+}
+
+/* Reuse the intermediate work AVX registers rather than storing in the W matrix. */
+ 
+void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m256d w1, w2, w2m, w1m, w;
+    __m256d a1, a2, a3, a4;
+    const __m256d deux = _mm256_set1_pd( 0.5 );
+    const __m256d moinsdeux = _mm256_set1_pd( -0.5 );
+
+    /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    /* dim 1 */
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=4 ){
+
+            a1 = _mm256_set_pd( A[(j*2)*lda + 2*i + 6], A[(j*2)*lda + 2*i + 4], A[(j*2)*lda + 2*i + 2], A[(j*2)*lda + 2*i] );
+            a2 = _mm256_set_pd( A[(j*2)*lda + 2*i + 7], A[(j*2)*lda + 2*i + 5], A[(j*2)*lda + 2*i + 3], A[(j*2)*lda + 2*i + 1] );
+            
+            a3 = _mm256_set_pd( A[(j*2+1)*lda + 2*i + 6], A[(j*2+1)*lda + 2*i + 4], A[(j*2+1)*lda + 2*i + 2], A[(j*2+1)*lda + 2*i] );
+            a4 = _mm256_set_pd( A[(j*2+1)*lda + 2*i + 7], A[(j*2+1)*lda + 2*i + 5], A[(j*2+1)*lda + 2*i + 3], A[(j*2+1)*lda + 2*i + 1] );
+            
+            /* lines: W1 = A[i][j] + A[i+1][j] = A1 + A2 */
+            
+            w1 =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
+            w1m =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+
+             /* lines: W2 = A[i][j+1] + A[i+1][j+1] = A3 + A4 */
+
+            w2 =_mm256_fmadd_pd( a3, deux, _mm256_mul_pd( a4, deux ) );
+            w2m =_mm256_fmadd_pd( a3, deux, _mm256_mul_pd( a4, moinsdeux ) );
+
+            /* columns: W = W1 + W2 = W[i][j] + W[j][j+1] */
+            
+            w =_mm256_fmadd_pd( w1, deux, _mm256_mul_pd( w2, deux ) );
+            _mm256_storeu_pd( &B[ j*ldb + i ], w ); 
+
+            w =_mm256_fmadd_pd( w1, deux, _mm256_mul_pd( w2, moinsdeux ) );
+            _mm256_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
+
+            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
+            _mm256_storeu_pd( &B[ j*ldb + i + N/2], w1 );
+            
+            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, moinsdeux ) );
+            _mm256_storeu_pd( &B[ (j+M/2)*ldb + i + N/2], w ); 
+           
+        }
+    }
+
+}

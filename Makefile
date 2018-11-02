@@ -5,7 +5,9 @@
 # dhamt2_avx_gather: avx, using gather_pd
 # dhamt2_sse: sse implementation for older process (pre-Haswell)
 # dhamt2_fma: fused multiply-and-add implementation
-DHAMT=dhamt2_avx
+# dhamt2_fma_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix
+
+DHAMT=dhamt2_avx_gather
 
 CC = gcc
 CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)
