@@ -179,14 +179,12 @@ void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     
     for( j = 0 ; j < M / 2 ; j++ ){ 
         for( i = 0 ; i < N ; i+=4 ){
-            a1 = _mm256_i64gather_pd( &W[ 2* j*lda + i], stride, 2 );
-            a2 = _mm256_i64gather_pd( &A[( 2*j+1)*lda + i], stride, 2 );
+            a1 = _mm256_loadu_pd(  &W[ 2* j*lda + i] );
+            a2 =  _mm256_loadu_pd(  &W[ ( 2 * j + 1 ) *lda + i] );
             w = _mm256_add_pd( a1, a2 );
             w = _mm256_mul_pd( w, deux );
             _mm256_storeu_pd( &B[ j*ldb + i ], w ); 
             
-            a1 = _mm256_i64gather_pd( &W[ 2*j*lda + i], stride, 2 );
-            a2 = _mm256_i64gather_pd( &W[ (2*(j+1))*lda + i], stride, 2 );
             w = _mm256_sub_pd( a1, a2 );
             w = _mm256_mul_pd( w, deux );
             _mm256_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
