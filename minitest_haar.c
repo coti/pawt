@@ -17,6 +17,7 @@
 #define DEFAULTM 16
 #define DEFAULTN 16
 
+
 void ddiago( double* A, int M, int N, double cond );
 void dillrandom( double* A, int M, int N, int lda, double cond, double* work, double* work2 );
 void DHAMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
@@ -37,7 +38,7 @@ void printmatrix( double* mat, int M, int N ) {
     printf( " - - - - - - - - - -\n" );
     for( i = 0 ; i < M ; i++ ) {
         for( j = 0 ; j < N ; j++ ) {
-            printf( "%lf  ", mat[N*i+j] );
+            printf( "%.04lf  ", mat[N*i+j] );
         }
         printf( "\n" );
     }
@@ -49,7 +50,7 @@ void printmatrixOctave( double* mat, int M, int N ) {
     for( i = 0 ; i < M ; i++ ) {
         printf( "[" );
         for( j = 0 ; j < N ; j++ ) {
-            printf( "%lf, ", mat[N*i+j] );
+            printf( "%.04lf, ", mat[N*i+j] );
         }
         printf( "]\n" );
     }
@@ -110,7 +111,8 @@ int main( int argc, char** argv ){
         DHAMT( mat, work, wor2, M, N, N, N );    
         //    printmatrixOctave( work, M, N );
         //         printmatrix( work, M, N );
-    }    
+    }
+    // printmatrixOctave( work, M, N );
 #ifdef WITHPAPI
 
     PAPI_stop_counters( values, NUM_EVENTS );
