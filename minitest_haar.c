@@ -1,3 +1,17 @@
+/* This file is part of pawt.
+ *
+ * Calling program for the 2D Haar transform dhamt2.
+ *
+ * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+ *                Sorbonne-Paris-Cité. All rights reserved.
+ * Author: see AUTHORS
+ * Licence: GPL-3.0, see COPYING for details.
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +33,7 @@
 
 
 void ddiago( double* A, int M, int N, double cond );
+void drandom( double* A, int M, int N );
 void dillrandom( double* A, int M, int N, int lda, double cond, double* work, double* work2 );
 void DHAMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 void dgemm_( char*, char*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int* ); 
@@ -94,7 +109,8 @@ int main( int argc, char** argv ){
 
     /* Ill-conditionned matrix */
     
-    dillrandom( mat, M, N, N, cond, work, wor2 );
+    //    dillrandom( mat, M, N, N, cond, work, wor2 );
+    drandom( mat, M, N );
     //    printmatrixOctave( mat, M, N );
     // printmatrix( mat, M, N );
 
@@ -112,7 +128,7 @@ int main( int argc, char** argv ){
         //    printmatrixOctave( work, M, N );
         //         printmatrix( work, M, N );
     }
-    // printmatrixOctave( work, M, N );
+    //   printmatrixOctave( work, M, N );
 #ifdef WITHPAPI
 
     PAPI_stop_counters( values, NUM_EVENTS );
@@ -130,6 +146,11 @@ int main( int argc, char** argv ){
     free( wor2 );
     return EXIT_SUCCESS;
 }
+
+void drandom( double* A, int M, int N ) {
+    int ISEED[4] = {0,0,0,1};
+    LAPACKE_dlarnv( 1, ISEED, M*N, A );
+}    
 
 void dillrandom( double* A, int M, int N, int lda, double cond, double* work, double* work2 ) {
 

@@ -1,3 +1,17 @@
+/* This file is part of pawt.
+ *
+ * Various implementations of the 2D Haar transform dhamt2.
+ *
+ * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+ *                Sorbonne-Paris-Cité. All rights reserved.
+ * Author: see AUTHORS
+ * Licence: GPL-3.0, see COPYING for details.
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
 #include <string.h>
 
 #include <x86intrin.h>
@@ -375,7 +389,8 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
 
     /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
     
-    /* dim 1 */
+#pragma omp parallel
+#pragma omp for collapse(2) schedule( static, 256 )
     for( j = 0 ; j < M/2 ; j++ ) {
         for( i = 0 ; i < N / 2 ; i+=4 ){
 

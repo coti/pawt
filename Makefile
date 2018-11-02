@@ -7,12 +7,25 @@
 # dhamt2_fma: fused multiply-and-add implementation
 # dhamt2_fma_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix
 
-DHAMT=dhamt2_avx_gather
+DHAMT=dhamt2_fma_reuse
+
+# This file is part of pawt.
+#
+# Makefile, to compile the program
+#
+# Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+#                Sorbonne-Paris-Cité. All rights reserved.
+# Author: see AUTHORS
+# Licence: GPL-3.0, see COPYING for details.
+#
+# Additional copyrights may follow
+#
+# $HEADER$
 
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT) -fopenmp
 LD = gcc
-LDOPT =
+LDOPT = -fopenmp
 LIBS =  -llapacke -lopenblas -lpapi
 
 all: minitest_haar
