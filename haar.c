@@ -388,9 +388,7 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     const __m256d moinsdeux = _mm256_set1_pd( -0.5 );
 
     /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
-    
-#pragma omp parallel
-#pragma omp for collapse(2) schedule( static, 256 )
+
     for( j = 0 ; j < M/2 ; j++ ) {
         for( i = 0 ; i < N / 2 ; i+=4 ){
 

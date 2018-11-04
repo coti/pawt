@@ -23,14 +23,14 @@ DHAMT=dhamt2_fma_reuse
 # $HEADER$
 
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT) -fopenmp
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT) 
 LD = gcc
-LDOPT = -fopenmp
+LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi
 
 all: minitest_haar
 
-minitest_haar: minitest_haar.o haar.o
+minitest_haar: minitest_haar.o haar.o matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
 %.o: %.c
