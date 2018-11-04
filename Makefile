@@ -9,6 +9,8 @@
 
 DHAMT=dhamt2_fma_reuse
 
+DDA4MT=dda4mt2_initial
+
 # This file is part of pawt.
 #
 # Makefile, to compile the program
@@ -23,20 +25,23 @@ DHAMT=dhamt2_fma_reuse
 # $HEADER$
 
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT) 
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)  -DDDA4MT=$(DDA4MT) 
 LD = gcc
 LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi
 
-all: minitest_haar
+all: minitest_haar minitest_daub4
 
 minitest_haar: minitest_haar.o haar.o matrices.o
+	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
+
+minitest_daub4: minitest_daub4.o daub4.o matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
 %.o: %.c
 	$(CC) $(CCOPT) -c $<
 
 clean:
-	@rm -f *o minitest_haar
+	@rm -f *o minitest_haar minitest_daub4
 
 .PHONY: clean
