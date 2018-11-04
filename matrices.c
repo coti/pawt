@@ -29,6 +29,15 @@ void printmatrixOctave( double* mat, int M, int N ) {
     }
         printf( "]\n" );
 }
+
+void identity( double* mat, int M, int N ) {
+    int i;
+    memset( mat, 0, M*N*sizeof( double ) );
+    for( i = 0 ; i < MIN( M, N ) ; i++ ) {
+        mat[ i*N + i] = 1;
+    }
+}
+
 void drandom( double* A, int M, int N ) {
     int ISEED[4] = {0,0,0,1};
     LAPACKE_dlarnv( 1, ISEED, M*N, A );
