@@ -56,6 +56,7 @@ void dda4mt2_initial( double* restrict A, double* restrict B, double* restrict W
 
 
     /* dim 1 */
+
     for( j = 0 ; j < M ; j++ ) {
         for( i = 0 ; i < (N / 2)-1 ; i++ ){ 
             W[ j*N + i] =  h0 * A[j*lda + 2*i] + h1 * A[ j*lda + 2*i + 1] 
@@ -76,8 +77,8 @@ void dda4mt2_initial( double* restrict A, double* restrict B, double* restrict W
         for( i = 0 ; i < N ; i++ ){
             B[i + j * ldb] = h0 * W[2*j*N +i] + h1 * W[ (2*j+1)*N + i] 
                 + h2 * W[(2*j+2)*N + i] + h3 * W[ (2*j+3)*N + i];
-            B[i + (j+M/2) * ldb ] = g0 * W[2*j*N +i] + h1 * W[ (2*j+1)*N + i] 
-                + h2 * W[(2*j+2)*N + i] + h3 * W[ (2*j+3)*N + i];
+            B[i + (j+M/2) * ldb ] = g0 * W[2*j*N +i] + g1 * W[ (2*j+1)*N + i] 
+                + g2 * W[(2*j+2)*N + i] + g3 * W[ (2*j+3)*N + i];
             // printf( "B[%d] = %.02lf = %.02lf +%.02lf +%.02lf +%.02lf \n", i + j * ldb, B[i + j * ldb], h0 * W[2*j*N +i], h1 * W[ (2*j+1)*N + i], h2 * W[(2*j+2)*N + i], h3 * W[ (2*j+3)*N + i] );
             //  printf( "B[%d] = %.02lf = %.02lf +%.02lf +%.02lf +%.02lf \n", i + (j + M/2) * ldb, B[i + (j+M/2) * ldb], g0 * W[2*j*N +i], h1 * W[ (2*j+1)*N + i], h2 * W[(2*j+2)*N + i], h3 * W[ (2*j+3)*N + i] );
       }
@@ -92,4 +93,4 @@ void dda4mt2_initial( double* restrict A, double* restrict B, double* restrict W
     
 
 }
-
+ 
