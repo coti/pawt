@@ -10,7 +10,8 @@
 DHAMT=dhamt2_fma_reuse
 
 # dda4mt2_initial
-DDA4MT=dda4mt2_avx
+# dda4mt2_avx
+DDA4MT=dda4mt2_fma
 
 # This file is part of pawt.
 #
