@@ -242,6 +242,8 @@ void dda4mt2_fma( double* restrict A, double* restrict B, double* restrict W, in
             a2 = _mm256_set_pd(  A[ j*lda + ( 2*(i + 3) + 2 ) % N],  A[ j*lda + ( 2*(i + 2) + 2) %N],  A[ j*lda + ( 2*(i + 1) + 2) %N],   A[ j*lda + ( 2*i + 2 )%N] );
             a3 = _mm256_set_pd(  A[ j*lda + ( 2*(i + 3) + 3 ) % N],  A[ j*lda + ( 2*(i + 2) + 3 ) % N],  A[ j*lda + ( 2*(i + 1) + 3 ) %N],   A[ j*lda + ( 2*i + 3 ) %N] );
 
+            /* Variant: 
+               w = a0 * h0 + ( a1 * h1 + ( a2 * h2 + (a3 * h3))) */
 
             s0 = _mm256_fmadd_pd( a0, ah0,  _mm256_mul_pd( a1, ah1 ) );
             s1 = _mm256_fmadd_pd( a2, ah2,  _mm256_mul_pd( a3, ah3 ) );
@@ -269,24 +271,16 @@ void dda4mt2_fma( double* restrict A, double* restrict B, double* restrict W, in
             a2 = _mm256_loadu_pd( &W[((2*j+2)%M)*N + i] );
             a3 = _mm256_loadu_pd( &W[((2*j+3)%M)*N + i] );
             
-            w0 = _mm256_mul_pd( a0, ah0 );
-            w1 = _mm256_mul_pd( a1, ah1 );
-            w2 = _mm256_mul_pd( a2, ah2 );
-            w3 = _mm256_mul_pd( a3, ah3 );
-
-            s0 = _mm256_add_pd( w0, w1);
-            s1 = _mm256_add_pd( w2, w3);
+            s0 = _mm256_fmadd_pd( a0, ah0,  _mm256_mul_pd( a1, ah1 ) );
+            s1 = _mm256_fmadd_pd( a2, ah2,  _mm256_mul_pd( a3, ah3 ) );
+            
             w = _mm256_add_pd( s0, s1 );
             
-            _mm256_storeu_pd( &B[ j*ldb + i], w );             
+            _mm256_storeu_pd( &W[ j*ldb + i], w );             
 
-            w0 = _mm256_mul_pd( a0, ag0 );
-            w1 = _mm256_mul_pd( a1, ag1 );
-            w2 = _mm256_mul_pd( a2, ag2 );
-            w3 = _mm256_mul_pd( a3, ag3 );
+            s0 = _mm256_fmadd_pd( a0, ag0,  _mm256_mul_pd( a1, ag1 ) );
+            s1 = _mm256_fmadd_pd( a2, ag2,  _mm256_mul_pd( a3, ag3 ) );
 
-            s0 = _mm256_add_pd( w0, w1);
-            s1 = _mm256_add_pd( w2, w3);
             w = _mm256_add_pd( s0, s1 );
             
             _mm256_storeu_pd( &B[ (j+M/2)*ldb + i], w );             
