@@ -14,8 +14,9 @@ DHAMT=dhamt2_fma_reuse
 # dda4mt2_avx
 # dda4mt2_fma
 # dda4mt2_fma2
+# dda4mt2_fma_reuse
 # dda4mt2_fma2_reuse
-DDA4MT=dda4mt2_initial
+DDA4MT=dda4mt2_fma_reuse
 
 # DEBUG_BASARAB: comparison with Basarab's example
 
@@ -33,7 +34,7 @@ DDA4MT=dda4mt2_initial
 # $HEADER$
 
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)  -DDDA4MT=$(DDA4MT) 
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)  -DDDA4MT=$(DDA4MT) #-DDEBUG_BASARAB
 LD = gcc
 LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi
