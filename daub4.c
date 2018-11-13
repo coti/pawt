@@ -419,21 +419,6 @@ void dda4mt2_fma2_reuse( double* restrict A, double* restrict B, double* restric
             s1 = _mm256_fmadd_pd( ad, ag1, s0 );
             w3m = _mm256_fmadd_pd( ac, ag0, s1 );
 
-#if 0
-            //
-            _mm256_storeu_pd( &W[ 2*j*N + i], w0 );             
-            _mm256_storeu_pd( &W[ 2*j*N + i + N/2], w0m );             
-
-            _mm256_storeu_pd( &W[ (1*j+1)*N + i], w1 );             
-            _mm256_storeu_pd( &W[ (2*j+1)*N + i + N/2], w1m );             
-
-            _mm256_storeu_pd( &W[ (2*j+2)*N + i], w2 );             
-            _mm256_storeu_pd( &W[ (2*j+2)*N + i + N/2], w2m );
-            
-            _mm256_storeu_pd( &W[ (2*j+3)*N + i], w3 );             
-            _mm256_storeu_pd( &W[ (2*j+3)*N + i + N/2], w3m );
-
-#endif
             /* Columns: B = W1 + W2 + W3 + W4 = W[i][j] + W[j][j+1] + W[j][j+2] + W[j][j+3] */
 
             s0 = _mm256_fmadd_pd( w2, ah2, _mm256_mul_pd( w3, ah3 ) );
@@ -459,30 +444,5 @@ void dda4mt2_fma2_reuse( double* restrict A, double* restrict B, double* restric
         }
    }
 
-#if 0
-    /* dim 2 */
-    
-    for( j = 0 ; j < M / 2 ; j++ ){ 
-        for( i = 0 ; i < N ; i+=4 ){
-            a0 = _mm256_loadu_pd( &W[2*j*N + i] );
-            a1 = _mm256_loadu_pd( &W[(2*j+1)*N + i] );
-            a2 = _mm256_loadu_pd( &W[((2*j+2)%M)*N + i] );
-            a3 = _mm256_loadu_pd( &W[((2*j+3)%M)*N + i] );
-            
-            s0 = _mm256_fmadd_pd( a2, ah2, _mm256_mul_pd( a3, ah3 ) );
-            s1 = _mm256_fmadd_pd( a1, ah1, s0 );
-            w = _mm256_fmadd_pd( a0, ah0, s1 );
-            
-            _mm256_storeu_pd( &B[ j*ldb + i], w );             
-
-            s0 = _mm256_fmadd_pd( a2, ag2, _mm256_mul_pd( a3, ag3 ) );
-            s1 = _mm256_fmadd_pd( a1, ag1, s0 );
-            w = _mm256_fmadd_pd( a0, ag0, s1 );
-            
-           _mm256_storeu_pd( &B[ (j+M/2)*ldb + i], w );             
-
-        }
-    }
-#endif
 }
 
