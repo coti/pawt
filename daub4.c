@@ -419,7 +419,7 @@ void dda4mt2_fma2_reuse( double* restrict A, double* restrict B, double* restric
             s1 = _mm256_fmadd_pd( ad, ag1, s0 );
             w3m = _mm256_fmadd_pd( ac, ag0, s1 );
 
-#if 1
+#if 0
             //
             _mm256_storeu_pd( &W[ 2*j*N + i], w0 );             
             _mm256_storeu_pd( &W[ 2*j*N + i + N/2], w0m );             
