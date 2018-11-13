@@ -120,10 +120,12 @@ int main( int argc, char** argv ){
         //    printmatrixOctave( work, M, N );
         //         printmatrix( work, M, N );
     }
-    /*    printmatrixOctave( wor2, M, N );
+#ifdef DEBUG_BASARAB
+    printmatrixOctave( wor2, M, N );
     printmatrixOctave( work, M, N );
     printmatrixOctave( solution, M, N );
-    */
+#endif
+    
 #ifdef WITHPAPI
     PAPI_stop_counters( values, NUM_EVENTS );
     printf( "# M \t N \t PAPI_TOT_CYC \t PAPI_L2_DCM \t PAPI_L3_TCM\n" );

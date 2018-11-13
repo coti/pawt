@@ -47,6 +47,52 @@ void dda4mt2_initial( double* restrict A, double* restrict B, double* restrict W
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
+    int i, j, k;
+
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+
+    /* dim 1 */
+
+    for( k = 0 ; k < M ; k++ ) {
+        i = j = 0;
+        while( i < N-1 ) { 
+            W[ k*N + j] = h0 * A[k*lda + i] + h1 * A[ k*lda + i+1] + h2 * A[k*lda + ( i + 2 ) % N ] + h3 * A[ k*lda + ( i + 3 ) % N ];
+            i += 2;
+            j++;
+        }
+        i = 0;
+        while( i < N-1 ) {
+            W[ k*N + j] = g0 * A[k*lda + i] + g1 * A[ k*lda + i+1] + g2 * A[k*lda + ( i + 2 ) % N ] + g3 * A[ k*lda + ( i + 3 ) % N ];
+            i += 2;
+            j++;
+        }
+    }
+    
+    /* dim 2 */
+
+    for( k = 0, i = 0 ; k < M ; k+=2, i++ ) { /* upper half */
+        for( j = 0 ; j < N ; j++ ) {
+            B[i*ldb + j] = h0 * W[k*N + j] + h1 * W[(k+1)*N + j] + h2 * W[(k+2)*N + j] + h3 * W[(k+3)*N + j] ;
+        }
+    }
+    for( k = 0, i = M/2; k < M ; k+=2, i++ ) { /* lower half */
+        for( j = 0 ; j < N ; j++ ) {
+            B[i*ldb + j] = g0 * W[k*N + j] + g1 * W[(k+1)*N + j] + g2 * W[((k+2)%M)*N + j] + g3 * W[((k+3)%M)*N + j] ;
+        }
+    }
+}
+
+#ifdef  __cplusplus
+void dda4mt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
+void dda4mt2_loop( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
     int i, j;
 
     dGetCoeffs4( &h0, &h1, &h2, &h3 );
