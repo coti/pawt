@@ -751,8 +751,8 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
     ag2 = _mm256_set1_pd( g2 );
     ag3 = _mm256_set1_pd( g3 );
 
-    for( j = 0 ; j < M / 2 ; j++ ) {
-        for( i = 0 ; i < N / 2 ; i+=4 ){
+    for( j = 0 ; j < M / 2; j++ ) {
+        for( i = 0 ; i < N / 2 - 4 ; i+=4 ){
             a0 = _mm256_i64gather_pd( &A[(j*2)*lda + 2*i], stride, 2 );
             a1 = _mm256_i64gather_pd( &A[(j*2)*lda + 2*i + 1], stride, 2 );
             a2 = _mm256_i64gather_pd( &A[(j*2)*lda + 2*i + 2], stride, 2 );
@@ -763,15 +763,15 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
             a6 = _mm256_i64gather_pd( &A[(j*2+1)*lda + 2*i + 2], stride, 2 );
             a7 = _mm256_i64gather_pd( &A[(j*2+1)*lda + 2*i + 3], stride, 2 );
 
-            a8 = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i], stride, 2 );
-            a9 = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i + 1], stride, 2 );
-            aa = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i + 2], stride, 2 );
-            ab = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i + 3], stride, 2 );
+            a8 = _mm256_i64gather_pd( &A[((j*2+2)%M)*lda + 2*i], stride, 2 );
+            a9 = _mm256_i64gather_pd( &A[((j*2+2)%M)*lda + 2*i + 1], stride, 2 );
+            aa = _mm256_i64gather_pd( &A[((j*2+2)%M)*lda + 2*i + 2], stride, 2 );
+            ab = _mm256_i64gather_pd( &A[((j*2+2)%M)*lda + 2*i + 3], stride, 2 );
 
-            ac = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i], stride, 2 );
-            ad = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i + 1], stride, 2 );
-            ae = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i + 2], stride, 2 );
-            af = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i + 3], stride, 2 );
+            ac = _mm256_i64gather_pd( &A[((j*2+3)%M)*lda + 2*i], stride, 2 );
+            ad = _mm256_i64gather_pd( &A[((j*2+3)%M)*lda + 2*i + 1], stride, 2 );
+            ae = _mm256_i64gather_pd( &A[((j*2+3)%M)*lda + 2*i + 2], stride, 2 );
+            af = _mm256_i64gather_pd( &A[((j*2+3)%M)*lda + 2*i + 3], stride, 2 );
 
             /* Lines: W1 = A[i][j] + A[i+1][j] + A[i+2][j] + A[i+3][j] = A1 + A2 + A3 + A4 */
 
@@ -845,13 +845,13 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
         a6 = _mm256_set_pd( A[ (j*2+1)*lda + ( 2*i + 8 ) % N],  A[ (j*2+1)*lda + ( 2*i + 6 ) % N],  A[ (j*2+1)*lda + 2*i + 4 ],   A[ (j*2+1)*lda + 2*i + 2 ]);
         a7 = _mm256_set_pd( A[ (j*2+1)*lda + ( 2*i + 9 ) % N],  A[ (j*2+1)*lda + ( 2*i + 7 ) % N],  A[ (j*2+1)*lda + 2*i + 5 ],   A[ (j*2+1)*lda + 2*i + 3 ] );
 
-        a8 = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i], stride, 2 );
-        a9 = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i + 1], stride, 2 );
+        a8 = _mm256_i64gather_pd( &A[((j*2+2)%M)*lda + 2*i], stride, 2 );
+        a9 = _mm256_i64gather_pd( &A[((j*2+2)%M)*lda + 2*i + 1], stride, 2 );
         aa = _mm256_set_pd( A[ ((j*2+2)%M)*lda + ( 2*i + 8 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 6 ) % N],  A[ ((j*2+2)%M)*lda + 2*i + 4 ],   A[ ((j*2+2)%M)*lda + 2*i + 2 ]);
         ab = _mm256_set_pd( A[ ((j*2+2)%M)*lda + ( 2*i + 9 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 7 ) % N],  A[ ((j*2+2)%M)*lda + 2*i + 5 ],   A[ ((j*2+2)%M)*lda + 2*i + 3 ] );
 
-        ac = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i], stride, 2 );
-        ad = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i + 1], stride, 2 );
+        ac = _mm256_i64gather_pd( &A[((j*2+3)%M)*lda + 2*i], stride, 2 );
+        ad = _mm256_i64gather_pd( &A[((j*2+3)%M)*lda + 2*i + 1], stride, 2 );
         ae = _mm256_set_pd( A[ ((j*2+3)%M)*lda + ( 2*i + 8 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 6 ) % N],  A[ ((j*2+3)%M)*lda + 2*i + 4 ],   A[ ((j*2+3)%M)*lda + 2*i + 2 ]);
         af = _mm256_set_pd( A[ ((j*2+3)%M)*lda + ( 2*i + 9 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 7 ) % N],  A[ ((j*2+3)%M)*lda + 2*i + 5 ],   A[ ((j*2+3)%M)*lda + 2*i + 3 ] );
         
