@@ -12,11 +12,13 @@ DHAMT=dhamt2_fma_reuse
 # dda4mt2_initial
 # dda4mt2_loop
 # dda4mt2_avx
+# dda4mt2_avx_gather
 # dda4mt2_fma
 # dda4mt2_fma2
 # dda4mt2_fma_reuse
 # dda4mt2_fma2_reuse
-DDA4MT=dda4mt2_fma_reuse
+# dda4mt2_fma2_reuse_gather
+DDA4MT=dda4mt2_fma2_reuse_gather
 
 # DEBUG_BASARAB: comparison with Basarab's example
 
