@@ -221,6 +221,130 @@ void dda4mt2_avx( double* restrict A, double* restrict B, double* restrict W, in
 
 }
 
+void dda4mt2_avx_gather( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j;
+
+    __m256d a0, a1, a2, a3;
+    __m256d w, w0, w1, w2, w3, s0, s1;
+    __m256d ah0, ah1, ah2, ah3;
+    __m256d ag0, ag1, ag2, ag3;
+    __m256i stride = _mm256_set_epi64x( 3*sizeof( double ), 2*sizeof( double ),
+                                          sizeof( double ), 0 );
+    
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+    ah0 = _mm256_set1_pd( h0 );
+    ah1 = _mm256_set1_pd( h1 );
+    ah2 = _mm256_set1_pd( h2 );
+    ah3 = _mm256_set1_pd( h3 );
+    ag0 = _mm256_set1_pd( g0 );
+    ag1 = _mm256_set1_pd( g1 );
+    ag2 = _mm256_set1_pd( g2 );
+    ag3 = _mm256_set1_pd( g3 );
+
+    /* dim 1 */
+    
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 - 4 ; i+=4 ){
+            a0 = _mm256_i64gather_pd( &A[j*lda + 2*i], stride, 2 );
+            a1 = _mm256_i64gather_pd( &A[j*lda + 2*i + 1], stride, 2 );
+            a2 = _mm256_i64gather_pd( &A[j*lda + 2*i + 2], stride, 2 );
+            a3 = _mm256_i64gather_pd( &A[j*lda + 2*i + 3], stride, 2 );
+
+            w0 = _mm256_mul_pd( a0, ah0 );
+            w1 = _mm256_mul_pd( a1, ah1 );
+            w2 = _mm256_mul_pd( a2, ah2 );
+            w3 = _mm256_mul_pd( a3, ah3 );
+
+            s0 = _mm256_add_pd( w0, w1);
+            s1 = _mm256_add_pd( w2, w3);
+            w = _mm256_add_pd( s0, s1 );
+            
+            _mm256_storeu_pd( &W[ j*N + i], w );             
+
+            w0 = _mm256_mul_pd( a0, ag0 );
+            w1 = _mm256_mul_pd( a1, ag1 );
+            w2 = _mm256_mul_pd( a2, ag2 );
+            w3 = _mm256_mul_pd( a3, ag3 );
+
+            s0 = _mm256_add_pd( w0, w1);
+            s1 = _mm256_add_pd( w2, w3);
+            w = _mm256_add_pd( s0, s1 );
+            
+            _mm256_storeu_pd( &W[ j*N + i + N/2], w );             
+        }
+
+        /* The last column cannot be done with gather because of the folding */
+        a0 = _mm256_i64gather_pd( &A[j*lda + 2*i], stride, 2 );
+        a1 = _mm256_i64gather_pd( &A[j*lda + 2*i + 1], stride, 2 );
+        a2 = _mm256_set_pd(  A[ j*lda + ( 2*(i + 3) + 2 ) % N],  A[ j*lda + ( 2*(i + 2) + 2) %N],  A[ j*lda + ( 2*(i + 1) + 2) %N],   A[ j*lda + ( 2*i + 2 )%N] );
+        a3 = _mm256_set_pd(  A[ j*lda + ( 2*(i + 3) + 3 ) % N],  A[ j*lda + ( 2*(i + 2) + 3 ) % N],  A[ j*lda + ( 2*(i + 1) + 3 ) %N],   A[ j*lda + ( 2*i + 3 ) %N] );
+        
+        w0 = _mm256_mul_pd( a0, ah0 );
+        w1 = _mm256_mul_pd( a1, ah1 );
+        w2 = _mm256_mul_pd( a2, ah2 );
+        w3 = _mm256_mul_pd( a3, ah3 );
+        
+        s0 = _mm256_add_pd( w0, w1);
+        s1 = _mm256_add_pd( w2, w3);
+        w = _mm256_add_pd( s0, s1 );
+            
+        _mm256_storeu_pd( &W[ j*N + i], w );             
+        
+        w0 = _mm256_mul_pd( a0, ag0 );
+        w1 = _mm256_mul_pd( a1, ag1 );
+        w2 = _mm256_mul_pd( a2, ag2 );
+        w3 = _mm256_mul_pd( a3, ag3 );
+        
+        s0 = _mm256_add_pd( w0, w1);
+        s1 = _mm256_add_pd( w2, w3);
+        w = _mm256_add_pd( s0, s1 );
+        
+        _mm256_storeu_pd( &W[ j*N + i + N/2], w );             
+   }
+    
+    /* dim 2 */
+    
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i+=4 ){
+            a0 = _mm256_loadu_pd( &W[2*j*N + i] );
+            a1 = _mm256_loadu_pd( &W[(2*j+1)*N + i] );
+            a2 = _mm256_loadu_pd( &W[((2*j+2)%M)*N + i] );
+            a3 = _mm256_loadu_pd( &W[((2*j+3)%M)*N + i] );
+            
+            w0 = _mm256_mul_pd( a0, ah0 );
+            w1 = _mm256_mul_pd( a1, ah1 );
+            w2 = _mm256_mul_pd( a2, ah2 );
+            w3 = _mm256_mul_pd( a3, ah3 );
+
+            s0 = _mm256_add_pd( w0, w1);
+            s1 = _mm256_add_pd( w2, w3);
+            w = _mm256_add_pd( s0, s1 );
+            
+            _mm256_storeu_pd( &B[ j*ldb + i], w );             
+
+            w0 = _mm256_mul_pd( a0, ag0 );
+            w1 = _mm256_mul_pd( a1, ag1 );
+            w2 = _mm256_mul_pd( a2, ag2 );
+            w3 = _mm256_mul_pd( a3, ag3 );
+
+            s0 = _mm256_add_pd( w0, w1);
+            s1 = _mm256_add_pd( w2, w3);
+            w = _mm256_add_pd( s0, s1 );
+            
+            _mm256_storeu_pd( &B[ (j+M/2)*ldb + i], w );             
+
+        }
+
+    }
+
+}
+
 void dda4mt2_fma( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
