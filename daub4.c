@@ -76,7 +76,7 @@ void dda4mt2_initial( double* restrict A, double* restrict B, double* restrict W
 
     for( k = 0, i = 0 ; k < M ; k+=2, i++ ) { /* upper half */
         for( j = 0 ; j < N ; j++ ) {
-            B[i*ldb + j] = h0 * W[k*N + j] + h1 * W[(k+1)*N + j] + h2 * W[(k+2)*N + j] + h3 * W[(k+3)*N + j] ;
+            B[i*ldb + j] = h0 * W[k*N + j] + h1 * W[(k+1)*N + j] + h2 * W[((k+2)%M)*N + j] + h3 * W[((k+3)%M)*N + j] ;
         }
     }
     for( k = 0, i = M/2; k < M ; k+=2, i++ ) { /* lower half */
