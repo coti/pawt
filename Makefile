@@ -18,9 +18,11 @@ DHAMT=dhamt2_fma_reuse
 # dda4mt2_fma_reuse
 # dda4mt2_fma2_reuse
 # dda4mt2_fma2_reuse_gather
-DDA4MT=dda4mt2_fma2_reuse_gather
+DDA4MT=dda4mt2_avx_gather
 
-# DEBUG_BASARAB: comparison with Basarab's example
+DDA6MT=dda6mt2_initial
+
+DDA8MT=dda8mt2_initial
 
 # This file is part of pawt.
 #
@@ -36,12 +38,12 @@ DDA4MT=dda4mt2_fma2_reuse_gather
 # $HEADER$
 
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)  -DDDA4MT=$(DDA4MT) #-DDEBUG_BASARAB
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)  -DDDA4MT=$(DDA4MT) -DDDA6MT=$(DDA6MT)  -DDDA8MT=$(DDA8MT) 
 LD = gcc
 LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi
 
-all: minitest_haar minitest_daub4
+all: minitest_daub6
 
 minitest_haar: minitest_haar.o haar.o matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
@@ -49,10 +51,16 @@ minitest_haar: minitest_haar.o haar.o matrices.o
 minitest_daub4: minitest_daub4.o daub4.o matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
+minitest_daub6: minitest_daub6.o daub6.o matrices.o
+	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
+
+minitest_daub8: minitest_daub8.o daub8.o matrices.o
+	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
+
 %.o: %.c
 	$(CC) $(CCOPT) -c $<
 
 clean:
-	@rm -f *o minitest_haar minitest_daub4
+	@rm -f *o minitest_haar minitest_daub4 minitest_daub6 minitest_daub8
 
 .PHONY: clean
