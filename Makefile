@@ -37,8 +37,10 @@ DDA8MT=dda8mt2_initial
 #
 # $HEADER$
 
+ARCHOPT = -march=native
+ALIGNOPT = -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store 
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -DWITHPAPI -DDHAMT=$(DHAMT)  -DDDA4MT=$(DDA4MT) -DDDA6MT=$(DDA6MT)  -DDDA8MT=$(DDA8MT) 
+CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDDA4MT=$(DDA4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) 
 LD = gcc
 LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi
@@ -57,10 +59,13 @@ minitest_daub6: minitest_daub6.o daub6.o matrices.o
 minitest_daub8: minitest_daub8.o daub8.o matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
+libpawt.so: haar.o daub4.c daub6.o
+	$(LD) $(LDOPT) $(ARCHOPT) -shared -o $@ $^ $(LIBS)
+
 %.o: %.c
 	$(CC) $(CCOPT) -c $<
 
 clean:
-	@rm -f *o minitest_haar minitest_daub4 minitest_daub6 minitest_daub8
+	@rm -f *.o libpawt.so minitest_haar minitest_daub4 minitest_daub6 minitest_daub8
 
 .PHONY: clean
