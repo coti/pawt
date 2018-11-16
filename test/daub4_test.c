@@ -1,6 +1,6 @@
 /* This file is part of pawt.
  *
- * Calling program for the 2D Haar transform dda4mt2.
+ * Calling program for the 2D Daubechies D4 transform dda4mt2.
  *
  * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
  *                Sorbonne-Paris-Cité. All rights reserved.
