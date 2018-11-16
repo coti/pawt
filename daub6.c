@@ -80,3 +80,33 @@ void dda6mt2_initial( double* restrict A, double* restrict B, double* restrict W
         }
     }
 }
+
+ #ifdef  __cplusplus
+void dda6mt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
+void dda6mt2_loop( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
+    double h[6], g[6];
+    int i, j;
+
+    dGetCoeffs6( h, g );
+
+    /* dim 1 */
+
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < (N / 2) ; i++ ){ 
+            W[ j*N + i] = h[0] * A[j*lda + 2*2*i] + h[1] * A[ j*lda + 2*i+1] + h[2] * A[j*lda + ( 2*i + 2 ) % N ] + h[3] * A[ j*lda + ( 2*i + 3 ) % N ]  + h[4] * A[j*lda + ( 2*i + 4 ) % N ] + h[5] * A[ j*lda + ( 2*i + 5 ) % N ];
+            W[ j*N + i + N/2] = g[0] * A[j*lda + 2*i] + g[1] * A[ j*lda + 2*i+1] + g[2] * A[j*lda + ( 2*i + 2 ) % N ] + g[3] * A[ j*lda + ( 2*i + 3 ) % N ]  + g[4] * A[j*lda + ( 2*i + 4 ) % N ] + g[5] * A[ j*lda + ( 2*i + 5 ) % N ];
+        }
+    }
+
+    /* dim 2 */
+
+    for( j = 0 ; j < (M / 2) ; j++ ){ 
+        for( i = 0 ; i < N ; i++ ){
+            B[i + j * ldb] = h[0] * W[2*j*N + i] + h[1] * W[(2*j+1)*N + i] + h[2] * W[((2*j+2)%M)*N + i] + h[3] * W[((2*j+3)%M)*N + i] + h[4] * W[((2*j+4)%M)*N + i] + h[5] * W[((2*j+5)%M)*N + i];
+            B[i + (j + N/2)*ldb] = g[0] * W[2*j*N + i] + g[1] * W[(2*j+1)*N + i] + g[2] * W[((2*j+2)%M)*N + i] + g[3] * W[((2*j+3)%M)*N + i] + g[4] * W[((2*j+4)%M)*N + i] + g[5] * W[((2*j+5)%M)*N + i];
+
+        }
+    }
+}
