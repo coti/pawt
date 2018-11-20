@@ -426,3 +426,133 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     }
 
 }
+
+/*
+c     Compute 2D Haar inverse transform of a matrix
+c
+c     Params:
+c     A: input matrix M*N, double precision
+c     B: output matrix M*N, double precision
+c     W: work matrix M*N, double precision
+c     M: nb of lines of the matrix, integer
+c     N: nb of columns of the matrix, integer
+c     LDA: leading dimension of A
+c     LDB: leading dimension of B
+
+c     TODO ASSUME M AND N ARE POWERS OF TWO
+c     TRANS = 'T': column-major, 'N': row-major
+
+c     Name:
+c     d double
+c     hi haar inverse
+c     mt matrix transform
+c     2 2D
+*/
+
+
+#ifdef  __cplusplus
+void dhimt2_initial( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
+void dhimt2_initial( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
+    int j, k;
+
+    /* dim 1 */
+    
+    for( k = 0 ; k < M ; k++ ) {
+        for( j = 0 ; j < N / 2 ; j++ ) {
+            W[ k*N + 2*j] = ( A[k*lda + j] + A[ k*lda + N / 2 + j] );
+            W[ k*N + 2*j + 1] = ( A[k*lda + j] - A[ k*lda + N / 2 + j] );
+        }
+    }
+    
+    /* dim 2 */
+    
+    for( k = 0 ; k < M / 2 ; k++ ) {
+        for( j = 0 ; j < N ; j++ ) {
+            B[ 2*k*ldb + j] = ( W[k*N + j] + W[ (k + M/2)*N + j] );
+            B[ (2*k+1)*ldb + j] = ( W[k*N + j] - W[ (k + M/2)*N + j] );
+        }
+    }
+    
+}
+ 
+void dhimt2_fma_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m256d w, a1, a2;
+    const __m256d moinsun = _mm256_set1_pd( -1 );
+    __m256i stride =   _mm256_set_epi64x( 1*sizeof( double ), 1*sizeof( double ),0 , 0 );
+    const __m256d sign = _mm256_set_pd( -1, 1, -1, 1 );
+
+    /* dim 1 */
+
+    /*  _mm256_i64scatter_pd would be useful to implement this one, 
+        but part of AVX512 */
+    
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=2 ){
+            a1 = _mm256_i64gather_pd( &A[j*lda + i], stride, 1 );
+            a2 = _mm256_i64gather_pd( &A[j*lda + i + N/2], stride, 1 );
+            
+            w =_mm256_fmadd_pd( a2, sign, a1 );
+            _mm256_storeu_pd( &W[ j*N + 2*i ], w );
+            
+        }
+    }
+    
+    /* dim 2 */
+
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i+=4 ){
+            a1 = _mm256_loadu_pd(  &W[ j*N + i] );
+            a2 =  _mm256_loadu_pd(  &W[ ( j + M/2 ) * N + i ] );
+
+            w = _mm256_add_pd( a1, a2 );
+            _mm256_storeu_pd( &B[ 2*j*N + i ], w ); 
+            
+            w =_mm256_fmadd_pd( a2, moinsun, a1 );
+            _mm256_storeu_pd( &B[ (2*j+1)*N + i ], w ); 
+        }
+    }
+    
+}
+
+void dhimt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m256d w, a1, a2;
+    const __m256d sign = _mm256_set_pd( -1, 1, -1, 1 );
+    const __m256d moinsun = _mm256_set1_pd( -1 );
+
+    /* dim 1 */
+
+    /*  _mm256_i64scatter_pd would be useful to implement this one, 
+        but part of AVX512 */
+    
+    for( j = 0 ; j < M ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=2 ){
+            a1 = _mm256_set_pd (A[j*lda + i + 1], A[j*lda + i + 1], A[j*lda + i], A[j*lda + i] );
+            a2 = _mm256_set_pd( A[j*lda + i + 1 + N/2], A[j*lda + i + 1 + N/2], A[j*lda + i + N/2], A[j*lda + i + N/2] );
+         
+            w =_mm256_fmadd_pd( a2, sign, a1 );
+            _mm256_storeu_pd( &W[ j*N + 2*i ], w );
+            
+        }
+    }
+    
+    /* dim 2 */
+
+    for( j = 0 ; j < M / 2 ; j++ ){ 
+        for( i = 0 ; i < N ; i+=4 ){
+            a1 = _mm256_loadu_pd(  &W[ j*N + i] );
+            a2 =  _mm256_loadu_pd(  &W[ ( j + M/2 ) * N + i ] );
+
+            w = _mm256_add_pd( a1, a2 );
+            _mm256_storeu_pd( &B[ 2*j*N + i ], w ); 
+            
+            w =_mm256_fmadd_pd( a2, moinsun, a1 );
+            _mm256_storeu_pd( &B[ (2*j+1)*N + i ], w ); 
+        }
+    }
+    
+}
+

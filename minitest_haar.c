@@ -33,6 +33,7 @@
 
 
 void DHAMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void DHIMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 
 
 #ifndef WITHPAPI
@@ -84,7 +85,7 @@ int main( int argc, char** argv ){
     
     //    dillrandom( mat, M, N, N, cond, work, wor2 );
     drandom( mat, M, N );
-    //    printmatrixOctave( mat, M, N );
+    printmatrixOctave( mat, M, N );
     // printmatrix( mat, M, N );
 
 #ifdef WITHPAPI
@@ -101,7 +102,14 @@ int main( int argc, char** argv ){
         //    printmatrixOctave( work, M, N );
         //         printmatrix( work, M, N );
     }
-    //   printmatrixOctave( work, M, N );
+    printmatrixOctave( work, M, N );
+
+    memset( wor2, 0, M*N*sizeof( double ) );
+    DHIMT( work, mat, wor2, M, N, N, N );
+
+    printf( "--\n" );
+    printmatrixOctave( mat, M, N );
+
 #ifdef WITHPAPI
 
     PAPI_stop_counters( values, NUM_EVENTS );

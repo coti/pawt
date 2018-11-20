@@ -7,7 +7,8 @@
 # dhamt2_fma: fused multiply-and-add implementation
 # dhamt2_fma_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix
 
-DHAMT=dhamt2_fma_reuse
+DHAMT=dhamt2_fma
+DHIMT=dhimt2_fma
 
 # dda4mt2_initial
 # dda4mt2_loop
@@ -40,7 +41,7 @@ DDA8MT=dda8mt2_initial
 ARCHOPT = -march=native
 ALIGNOPT = -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store 
 CC = gcc
-CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDDA4MT=$(DDA4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) 
+CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDHIMT=$(DHIMT) -DDDA4MT=$(DDA4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) 
 LD = gcc
 LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi
