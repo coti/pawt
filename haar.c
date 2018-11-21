@@ -385,7 +385,6 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     __m256d w1, w2, w2m, w1m, w;
     __m256d a1, a2, a3, a4;
     const __m256d deux = _mm256_set1_pd( 0.5 );
-    const __m256d moinsdeux = _mm256_set1_pd( -0.5 );
 
     /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
 
@@ -401,27 +400,26 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
             /* lines: W1 = A[i][j] + A[i+1][j] = A1 + A2 */
             
             w1 =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
-            w1m =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+            w1m =_mm256_fmsub_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
 
              /* lines: W2 = A[i][j+1] + A[i+1][j+1] = A3 + A4 */
 
             w2 =_mm256_fmadd_pd( a3, deux, _mm256_mul_pd( a4, deux ) );
-            w2m =_mm256_fmadd_pd( a3, deux, _mm256_mul_pd( a4, moinsdeux ) );
+            w2m =_mm256_fmsub_pd( a3, deux, _mm256_mul_pd( a4, deux ) );
 
             /* columns: W = W1 + W2 = W[i][j] + W[j][j+1] */
             
             w =_mm256_fmadd_pd( w1, deux, _mm256_mul_pd( w2, deux ) );
             _mm256_storeu_pd( &B[ j*ldb + i ], w ); 
 
-            w =_mm256_fmadd_pd( w1, deux, _mm256_mul_pd( w2, moinsdeux ) );
+            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
+            _mm256_storeu_pd( &B[ j*ldb + i + N/2], w );
+
+            w =_mm256_fmsub_pd( w1, deux, _mm256_mul_pd( w2, deux ) );
             _mm256_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
 
-            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
-            _mm256_storeu_pd( &B[ j*ldb + i + N/2], w1 );
-            
-            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, moinsdeux ) );
+            w =_mm256_fmsub_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
             _mm256_storeu_pd( &B[ (j+M/2)*ldb + i + N/2], w ); 
-           
         }
     }
 
