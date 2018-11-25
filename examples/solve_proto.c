@@ -1,3 +1,17 @@
+/* This file is part of pawt.
+ *
+ * Example of linear system solving after Haar wavelet transform.
+ *
+ * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+ *                Sorbonne-Paris-Cité. All rights reserved.
+ * Author: see AUTHORS
+ * Licence: GPL-3.0, see COPYING for details.
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,40 +19,21 @@
 
 #include "../matrices.h"
 
-/*
-  gcc -Wall -march=native  -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store  -o solve_proto solve_proto.c haar2.c matrices.c  -llapacke -lopenblas -lm
-*/
-
 #define DEFAULTM 16
 #define DEFAULTN 16
 
-#define DHAMT dhamt2_initial
-#define DHIMT dhimt2_initial
+#define DHAMT2 dhamt2_initial
+#define DHIMT2 dhimt2_initial
+#define DHAMT  dhamt_loop
+#define DHIMT  dhimt_loop
 
 void dscal_( int* N, double* DA, double* A, int* INCX );
 
-void DHAMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
-void DHIMT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void DHAMT2( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void DHIMT2( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 
-void dhamt( double* restrict A, double* restrict B, int N ) {
-    int i;
-    
-    for( i = 0 ; i < N / 2 ; i++ ){ 
-        B[ i] = ( A[2*i] + A[2*i+1] ) / 2.0;
-        }
-    for( i = 0 ; i < N / 2 ; i++ ){ 
-        B[ i + N/2] = ( A[2*i] - A[ 2*i+1] ) / 2.0;
-    }    
-}
-
-void dhimt( double* restrict A, double* restrict B, int N ) {
-    int i;
-    
-    for( i = 0 ; i < N / 2 ; i++ ) {
-        B[ 2*i] = ( A[i] + A[ N / 2 + i] );
-        B[2*i + 1] = ( A[i] - A[N / 2 + i] );
-    }    
-}
+void DHAMT( double* restrict A, double* restrict B, int N );
+void DHIMT( double* restrict A, double* restrict B, int N );
 
 int main( int argc, char** argv ){
 
@@ -82,8 +77,8 @@ int main( int argc, char** argv ){
 
     /* Take their Haar transform */
     
-    DHAMT( A, HA, work, M, N, N, N );
-    dhamt( B, HB, M  );
+    DHAMT2( A, HA, work, M, N, N, N );
+    DHAMT( B, HB, M  );
 
     printf( "HA:\n" );
     printmatrix( HA, M, N );
@@ -113,7 +108,7 @@ int main( int argc, char** argv ){
     
     /* Take the inverse Haar transform of the solution HX */
 
-    dhimt( HB, B, N );
+    DHIMT( HB, B, N );
     dscal_( &N, &DEMI, B, &ONE );
     printf( "X:\n" );
     printmatrix( B, N, 1 );
