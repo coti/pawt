@@ -33,6 +33,7 @@
 
 
 void DDA4MT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void DDI4MT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 
 
 #ifndef WITHPAPI
@@ -86,7 +87,7 @@ int main( int argc, char** argv ){
     //    dillrandom( mat, M, N, N, cond, work, wor2 );
         drandom( mat, M, N );
     //identity( mat, M, N );
-        // printmatrixOctave( mat, M, N );
+        printmatrixOctave( mat, M, N );
         //  printmatrixOctave( basarab, M, N );
     //printmatrix( mat, M, N );
     
@@ -102,8 +103,15 @@ int main( int argc, char** argv ){
     for( i = 0 ; i < NUMRUN ; i++ ) {
         DDA4MT( mat, work, wor2, M, N, N, N );
     }
+    //   printmatrixOctave( wor2, M, N );
     //    printmatrixOctave( work, M, N );
     //         printmatrix( work, M, N );
+    
+    memset( wor2, 0, M*N*sizeof( double ) );
+    memset( mat, 0, M*N*sizeof( double ) );
+    DDI4MT( work, mat, wor2, M, N, N, N );
+    //    printmatrixOctave( wor2, M, N );
+    printmatrixOctave( mat, M, N );
     
 #ifdef WITHPAPI
     PAPI_stop_counters( values, NUM_EVENTS );

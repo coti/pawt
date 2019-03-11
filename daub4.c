@@ -912,3 +912,64 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
         _mm256_storeu_pd( &B[ (1*j + M/2)*ldb + i + N / 2 ], w );
     }
 }
+/*
+c     Compute 2D Daubechies D4 inverse transform of a matrix
+c
+c     Params:
+c     A: input matrix M*N, double precision
+c     B: output matrix M*N, double precision
+c     W: work matrix M*N, double precision
+c     M: nb of lines of the matrix, integer
+c     N: nb of columns of the matrix, integer
+c     LDA: leading dimension of A
+c     LDB: leading dimension of B
+
+c     TODO ASSUME M AND N ARE POWERS OF TWO
+c     TRANS = 'T': column-major, 'N': row-major
+
+c     Name:
+c     d double
+c     di4 Daubechies D4 inverse
+c     mt matrix transform
+c     2 2D
+*/
+
+#ifdef  __cplusplus
+void ddi4mt2_initial( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
+void ddi4mt2_initial( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j, k;
+
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+
+    /* dim 2 */
+
+    for( k = 0 ; k < M / 2 ; k++ ) {
+        for( j = 0 ; j < N ; j++ ) {
+            W[ 2*k*N + j] = h0 * A[k*lda + j] + g0 * A[ (k + M/2)*lda + j]
+                + h2 * A[((k-1+M/2)%(M/2))*lda + j] + g2 * A[ (M/2 + (k-1+M/2)%(M/2))*lda + j];
+            W[ (2*k+1)*N + j] =  h1 * A[k*lda + j] + g1 * A[ (k + M/2)*N + j]
+            + h3 * A[((k-1+M/2)%(M/2))*lda + j] + g3 * A[ (( k-1+M/2)%(M/2)+M/2)*lda + j];            
+        }
+    }
+    
+    /* dim 2 */
+
+    for( k = 0 ; k < M ; k++ ) {
+        for( j = 0 ; j < N / 2 ; j++ ) {
+            B[ k*ldb + 2*j] = h0 * W[k*N + j] + g0 * W[ k*N + N / 2 + j]
+                + h2 * W[k*N + ( j - 1 + N/2 ) % (N/2)] + g2 * W[ k*N + N / 2 + ( ( j - 1 + N/2) %(  N/2))];
+            B[ k*ldb + 2*j + 1] = h1 * W[k*N + j] + g1 * W[ k*N + N / 2 + j]
+                + h3 * W[k*N + ( j - 1 + N/2 ) % (N/2) ] + g3 * W[ k*N + N / 2 + ( j - 1 + N/2) % ( N / 2 )];
+        }
+    }
+
+}
+
