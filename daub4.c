@@ -1315,7 +1315,7 @@ void ddi4mt2_fma_gather( double* restrict A, double* restrict B, double* restric
     /* dim 1 */
 
     for( j = 0 ; j < M ; j++ ) {
-        for( i = 0 ; i < N / 2 ; i+=2 ) {
+        for( i = 2 ; i < N / 2 - 2 ; i+=2 ) {
             a0 = _mm256_i64gather_pd( &A[j*lda + i], stride, 2 );
             a1 = _mm256_i64gather_pd( &A[j*N + N / 2 + i], stride, 2 );
             a2 = _mm256_i64gather_pd( &A[j*N + ( i - 1 + N/2 ) % (N/2)], stride, 2 );
