@@ -941,7 +941,7 @@ void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, i
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int j, k;
 
     dGetCoeffs4( &h0, &h1, &h2, &h3 );
     g0 = h3;
@@ -981,7 +981,7 @@ void ddi4mt2_avx( double* restrict A, double* restrict B, double* restrict W, in
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int i, j;
     
      __m256d w, w0, w1, w2, w3, s0, s1;
      __m256d a0, a1, a2, a3;
@@ -1065,7 +1065,7 @@ void ddi4mt2_avx_gather( double* restrict A, double* restrict B, double* restric
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int i, j;
     
      __m256d w, w0, w1, w2, w3, s0, s1;
      __m256d a0, a1, a2, a3;
@@ -1151,9 +1151,9 @@ void ddi4mt2_fma( double* restrict A, double* restrict B, double* restrict W, in
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int i, j;
     
-     __m256d w, w0, w1, w2, w3, s0, s1;
+     __m256d w, s0, s1;
      __m256d a0, a1, a2, a3;
     __m256d ah0, ah1, ah2, ah3;
     __m256d ag0, ag1, ag2, ag3;
@@ -1224,9 +1224,9 @@ void ddi4mt2_fma_gather( double* restrict A, double* restrict B, double* restric
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int i, j;
     
-     __m256d w, w0, w1, w2, w3, s0, s1;
+     __m256d w, s0, s1;
      __m256d a0, a1, a2, a3;
     __m256d ah0, ah1, ah2, ah3;
     __m256d ag0, ag1, ag2, ag3;
@@ -1298,9 +1298,9 @@ void ddi4mt2_fma2( double* restrict A, double* restrict B, double* restrict W, i
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int i, j;
     
-     __m256d w, w0, w1, w2, w3, s0, s1;
+     __m256d w, s0, s1;
      __m256d a0, a1, a2, a3;
     __m256d ah0, ah1, ah2, ah3;
     __m256d ag0, ag1, ag2, ag3;
@@ -1372,9 +1372,9 @@ void ddi4mt2_fma2_gather( double* restrict A, double* restrict B, double* restri
 #endif
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
-    int i, j, k;
+    int i, j;
     
-     __m256d w, w0, w1, w2, w3, s0, s1;
+     __m256d w, s0, s1;
      __m256d a0, a1, a2, a3;
     __m256d ah0, ah1, ah2, ah3;
     __m256d ag0, ag1, ag2, ag3;
