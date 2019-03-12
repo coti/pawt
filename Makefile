@@ -3,7 +3,7 @@
 # dhamt2_loop: loop order optimization
 # dhamt2_avx: avx, using set_pd to load the data
 # dhamt2_avx_gather: avx, using gather_pd
-# dhamt2_sse: sse implementation for older process (pre-Haswell)
+# dhamt2_sse: sse implementation for older processors (pre-Haswell)
 # dhamt2_fma: fused multiply-and-add implementation
 # dhamt2_fma_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix
 ## Possible DHIMT values:
