@@ -27,9 +27,10 @@ DHIMT=dhimt2_initial
 ## Possible DDI4MT values:
 # dhimt2_loop
 # dhimt2_avx
+# dhimt2_avx_gather
 
 DDA4MT=dda4mt2_initial
-DDI4MT=ddi4mt2_avx
+DDI4MT=ddi4mt2_avx_gather
 
 
 
