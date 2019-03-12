@@ -29,9 +29,10 @@ DHIMT=dhimt2_initial
 # dhimt2_avx
 # dhimt2_avx_gather
 # dhimt2_fma
+# dhimt2_fma_gather
 
 DDA4MT=dda4mt2_initial
-DDI4MT=ddi4mt2_fma
+DDI4MT=ddi4mt2_fma_gather
 
 
 
