@@ -24,8 +24,14 @@ DHIMT=dhimt2_initial
 # dda4mt2_fma2_reuse
 # dda4mt2_fma2_reuse_gather
 
+## Possible DDI4MT values:
+# dhimt2_loop
+# dhimt2_avx
+
 DDA4MT=dda4mt2_initial
-DDI4MT=ddi4mt2_initial
+DDI4MT=ddi4mt2_avx
+
+
 
 DDA6MT=dda6mt2_initial
 
