@@ -6,9 +6,13 @@
 # dhamt2_sse: sse implementation for older process (pre-Haswell)
 # dhamt2_fma: fused multiply-and-add implementation
 # dhamt2_fma_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix
+## Possible DHIMT values:
+# dhimt2_initial
+# dhimt2_fma
+# dhimt2_fma_gather
 
-DHAMT=dhamt2_fma
-DHIMT=dhimt2_fma
+DHAMT=dhamt2_fma_reuse
+DHIMT=dhimt2_initial
 
 # dda4mt2_initial
 # dda4mt2_loop
@@ -19,7 +23,20 @@ DHIMT=dhimt2_fma
 # dda4mt2_fma_reuse
 # dda4mt2_fma2_reuse
 # dda4mt2_fma2_reuse_gather
-DDA4MT=dda4mt2_avx_gather
+
+## Possible DDI4MT values:
+# dhimt2_loop
+# dhimt2_avx
+# dhimt2_avx_gather
+# dhimt2_fma
+# dhimt2_fma_gather
+# dhimt2_fma2
+# dhimt2_fma2_gather
+
+DDA4MT=dda4mt2_initial
+DDI4MT=ddi4mt2_fma2_gather
+
+
 
 DDA6MT=dda6mt2_initial
 
@@ -41,7 +58,7 @@ DDA8MT=dda8mt2_initial
 ARCHOPT = -march=native
 ALIGNOPT = -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store 
 CC = gcc
-CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDHIMT=$(DHIMT) -DDDA4MT=$(DDA4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) 
+CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDHIMT=$(DHIMT) -DDDA4MT=$(DDA4MT) -DDDI4MT=$(DDI4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) 
 LD = gcc
 LDOPT = 
 LIBS =  -llapacke -lopenblas -lpapi

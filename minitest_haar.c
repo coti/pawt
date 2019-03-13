@@ -104,6 +104,7 @@ int main( int argc, char** argv ){
     }
     printmatrixOctave( work, M, N );
 
+    memset( mat, 0, M*N*sizeof( double ) );
     memset( wor2, 0, M*N*sizeof( double ) );
     DHIMT( work, mat, wor2, M, N, N, N );
 

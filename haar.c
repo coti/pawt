@@ -60,7 +60,7 @@ void dhamt2_initial( double* restrict A, double* restrict B, double* restrict W,
             j++;
         }
     }
-    
+
     /* dim 2 */
     /* First term of the sum */
     k = i = 0;
@@ -385,13 +385,12 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     __m256d w1, w2, w2m, w1m, w;
     __m256d a1, a2, a3, a4;
     const __m256d deux = _mm256_set1_pd( 0.5 );
-    const __m256d moinsdeux = _mm256_set1_pd( -0.5 );
 
     /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
-
+    
     for( j = 0 ; j < M/2 ; j++ ) {
         for( i = 0 ; i < N / 2 ; i+=4 ){
-
+            
             a1 = _mm256_set_pd( A[(j*2)*lda + 2*i + 6], A[(j*2)*lda + 2*i + 4], A[(j*2)*lda + 2*i + 2], A[(j*2)*lda + 2*i] );
             a2 = _mm256_set_pd( A[(j*2)*lda + 2*i + 7], A[(j*2)*lda + 2*i + 5], A[(j*2)*lda + 2*i + 3], A[(j*2)*lda + 2*i + 1] );
             
@@ -401,30 +400,28 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
             /* lines: W1 = A[i][j] + A[i+1][j] = A1 + A2 */
             
             w1 =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
-            w1m =_mm256_fmadd_pd( a1, deux, _mm256_mul_pd( a2, moinsdeux ) );
+            w1m =_mm256_fmsub_pd( a1, deux, _mm256_mul_pd( a2, deux ) );
 
              /* lines: W2 = A[i][j+1] + A[i+1][j+1] = A3 + A4 */
 
             w2 =_mm256_fmadd_pd( a3, deux, _mm256_mul_pd( a4, deux ) );
-            w2m =_mm256_fmadd_pd( a3, deux, _mm256_mul_pd( a4, moinsdeux ) );
+            w2m =_mm256_fmsub_pd( a3, deux, _mm256_mul_pd( a4, deux ) );
 
             /* columns: W = W1 + W2 = W[i][j] + W[j][j+1] */
             
             w =_mm256_fmadd_pd( w1, deux, _mm256_mul_pd( w2, deux ) );
             _mm256_storeu_pd( &B[ j*ldb + i ], w ); 
 
-            w =_mm256_fmadd_pd( w1, deux, _mm256_mul_pd( w2, moinsdeux ) );
+            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
+            _mm256_storeu_pd( &B[ j*ldb + i + N/2], w );
+
+            w =_mm256_fmsub_pd( w1, deux, _mm256_mul_pd( w2, deux ) );
             _mm256_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
 
-            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
-            _mm256_storeu_pd( &B[ j*ldb + i + N/2], w1 );
-            
-            w =_mm256_fmadd_pd( w1m, deux, _mm256_mul_pd( w2m, moinsdeux ) );
+            w =_mm256_fmsub_pd( w1m, deux, _mm256_mul_pd( w2m, deux ) );
             _mm256_storeu_pd( &B[ (j+M/2)*ldb + i + N/2], w ); 
-           
         }
-    }
-
+    }        
 }
 
 /*
@@ -554,5 +551,59 @@ void dhimt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int 
         }
     }
     
+}
+
+/*
+c     Compute 1D Haar direct transform of a matrix
+c
+c     Params:
+c     A: input matrix M*N, double precision
+c     B: output matrix M*N, double precision
+c     N: nb of columns of the matrix, integer
+
+c     TODO ASSUME M AND N ARE POWERS OF TWO
+c     TRANS = 'T': column-major, 'N': row-major
+
+c     Name:
+c     d double
+c     ha haar
+c     mt matrix transform
+*/
+
+void dhamt_loop( double* restrict A, double* restrict B, int N ) {
+    int i;
+    
+    for( i = 0 ; i < N / 2 ; i++ ){ 
+        B[ i] = ( A[2*i] + A[2*i+1] ) / 2.0;
+        }
+    for( i = 0 ; i < N / 2 ; i++ ){ 
+        B[ i + N/2] = ( A[2*i] - A[ 2*i+1] ) / 2.0;
+    }    
+}
+
+/*
+c     Compute 1D Haar inverse transform of a matrix
+c
+c     Params:
+c     A: input matrix M*N, double precision
+c     B: output matrix M*N, double precision
+c     N: nb of columns of the matrix, integer
+
+c     TODO ASSUME M AND N ARE POWERS OF TWO
+c     TRANS = 'T': column-major, 'N': row-major
+
+c     Name:
+c     d double
+c     hi haar inverse
+c     mt matrix transform
+*/
+
+void dhimt_loop( double* restrict A, double* restrict B, int N ) {
+    int i;
+    
+    for( i = 0 ; i < N / 2 ; i++ ) {
+        B[ 2*i] = ( A[i] + A[ N / 2 + i] );
+        B[2*i + 1] = ( A[i] - A[N / 2 + i] );
+    }    
 }
 
