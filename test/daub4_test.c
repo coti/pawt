@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <execinfo.h>
 
 #ifdef WITHPAPI
 #include <papi.h>
@@ -36,15 +37,53 @@ void dda4mt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int ld
 void dda4mt2_fma2_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma2_reuse_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 
+void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void ddi4mt2_avx( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void ddi4mt2_avx_gather( double* A, double* B, double* W, int M, int N, int lda, int ldb );
+void ddi4mt2_fma( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void ddi4mt2_fma_gather( double* A, double* B, double* W, int M, int N, int lda, int ldb );
+void ddi4mt2_fma2( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void ddi4mt2_fma2_gather( double* A, double* B, double* W, int M, int N, int lda, int ldb );
+
+typedef void (*functionvariant_t)( double*, double*, double*, int, int, int, int );
+#define FUNC_DEF(func) { func, #func },
+typedef struct {
+    functionvariant_t func;
+    const char * name;
+} implem_t;
+
 int main( int argc, char** argv ){
 
-    int M, N;
+    int M, N, i;
     double* mat;
     double* work;
     double* wor2;
     double* reference;
     double cond = 1e10;
-    
+
+    implem_t direct[] = {
+        FUNC_DEF( dda4mt2_initial )
+        FUNC_DEF( dda4mt2_loop )
+        FUNC_DEF( dda4mt2_avx )
+        FUNC_DEF( dda4mt2_avx_gather )
+        FUNC_DEF( dda4mt2_fma )
+        FUNC_DEF( dda4mt2_fma2)
+        FUNC_DEF( dda4mt2_fma_reuse )
+        FUNC_DEF( dda4mt2_fma2_reuse )
+        FUNC_DEF( dda4mt2_fma2_reuse_gather )
+       NULL
+    };
+    implem_t backward[] = {
+        FUNC_DEF( ddi4mt2_loop )
+        FUNC_DEF( ddi4mt2_avx )
+        FUNC_DEF( ddi4mt2_avx_gather )
+        FUNC_DEF( ddi4mt2_fma )
+        FUNC_DEF( ddi4mt2_fma_gather )
+        FUNC_DEF( ddi4mt2_fma2 )
+        FUNC_DEF( ddi4mt2_fma2_gather )
+       NULL
+    };
+
     if( argc < 3 ) {
         M = DEFAULTM;
         N = DEFAULTN;
@@ -65,64 +104,33 @@ int main( int argc, char** argv ){
 
     /* Initial: point of reference */
     
-    dda4mt2_initial( mat, reference, wor2, M, N, N, N );    
+    i = 0;
+    direct[i].func( mat, work, wor2, M, N, N, N );    
+    i++;
 
-    dda4mt2_loop( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_loop: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_loop does not match the reference\n" );
+    while( direct[i].func != NULL ) {
+        direct[i].func( mat, work, wor2, M, N, N, N );    
+        if( compareMatrices( reference, work, M, N ) ) {
+            fprintf( stderr, "%s: OK\n", direct[i].name );
+        } else {
+            fprintf( stderr, "%s does not match the reference\n", direct[i].name );
+        }
+        i++;
     }
 
-    dda4mt2_avx( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_avx: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_avx does not match the reference\n" );
+    /* Backward transform */
+    
+    i = 0;
+    while( backward[i].func != NULL ) {
+        backward[i].func( work, reference, wor2, M, N, N, N );    
+        if( compareMatrices( reference, mat, M, N ) ) {
+            fprintf( stderr, "%s: OK\n", backward[i].name );
+        } else {
+            fprintf( stderr, "%s does not match the reference\n", backward[i].name );
+        }
+        i++;
     }
-
-    dda4mt2_avx_gather( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_avx_gather: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_avx_gather does not match the reference\n" );
-    }
-
-    dda4mt2_fma( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_fma: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_fma does not match the reference\n" );
-    }
-
-    dda4mt2_fma2( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_fma2: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_fma2 does not match the reference\n" );
-    }
-
-    dda4mt2_fma_reuse( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_fma_reuse: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_fma_reuse does not match the reference\n" );
-    }
-
-    dda4mt2_fma2_reuse( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_fma2_reuse: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_fma2_reuse does not match the reference\n" );
-    }
-
-    dda4mt2_fma2_reuse_gather( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_fma2_reuse_gather: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_fma2_reuse_gather does not match the reference\n" );
-    }
-
+    
     free( mat );
     free( work );
     free( wor2 );
