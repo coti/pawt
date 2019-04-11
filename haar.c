@@ -553,6 +553,42 @@ void dhimt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int 
     
 }
 
+void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m256d w1, w2, w1m, w2m, a1, a2, a3, a4;
+    const __m256d sign = _mm256_set_pd( -1, 1, -1, 1 );
+    const __m256d moinsun = _mm256_set1_pd( -1 );
+
+    /* dim 1 */
+
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=2 ){ 
+            a1 = _mm256_set_pd (A[j*lda + i + 1], A[j*lda + i + 1], A[j*lda + i], A[j*lda + i] );
+            a2 = _mm256_set_pd( A[j*lda + i + 1 + N/2], A[j*lda + i + 1 + N/2], A[j*lda + i + N/2], A[j*lda + i + N/2] );
+
+            a3 = _mm256_set_pd (A[( j + M/2 )*lda + i + 1], A[( j + M/2 )*lda + i + 1], A[( j + M/2 )*lda + i], A[( j + M/2 )*lda + i] );
+            a4 = _mm256_set_pd( A[( j + M/2 )*lda + i + 1 + N/2], A[( j + M/2 )*lda + i + 1 + N/2], A[( j + M/2 )*lda + i + N/2], A[( j + M/2 )*lda + i + N/2] );
+
+            /* Dim 1 */
+            
+            w1  = _mm256_fmadd_pd( a2, sign, a1 );
+            w1m = _mm256_fmadd_pd( a4, sign, a3 );
+
+            /* Dim 2 */
+
+            w2  = _mm256_add_pd( w1, w1m );
+            w2m = _mm256_fmadd_pd( w1m, moinsun, w1 );
+
+            /* Store */
+            
+            _mm256_storeu_pd( &B[ 2*j*N + 2*i ], w2 );
+            _mm256_storeu_pd( &B[ (2*j+1)*N + 2*i ], w2m );
+
+        }
+    }
+    
+}
+
 /*
 c     Compute 1D Haar direct transform of a matrix
 c

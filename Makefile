@@ -10,9 +10,10 @@
 # dhimt2_initial
 # dhimt2_fma
 # dhimt2_fma_gather
+# dhimt2_fma_reuse
 
 DHAMT=dhamt2_fma_reuse
-DHIMT=dhimt2_initial
+DHIMT=dhimt2_fma_reuse
 
 # dda4mt2_initial
 # dda4mt2_loop
