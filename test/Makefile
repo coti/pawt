@@ -11,6 +11,9 @@ all: haar_test daub4_test
 haar_test: haar_test.o ../haar.o ../matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
+haar_bench: haar_bench.o ../haar.o ../matrices.o
+	$(LD) $(LDOPT) -o $@ $^ $(LIBS) $(BENCHS) -lpapi
+
 daub4_test: daub4_test.o ../daub4.o ../matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
@@ -24,6 +27,6 @@ daub4_bench: daub4_bench.o ../daub4.o ../matrices.o
 	$(CC) $(CCOPT) -c $< $(BENCHS)
 
 clean:
-	@rm -f *o haar_test daub4_test daub4_bench
+	@rm -f *o haar_test daub4_test daub4_bench haar_bench daub6_test
 
 .PHONY: clean

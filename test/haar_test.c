@@ -22,18 +22,10 @@
 
 #include "../matrices.h"
 #include "utils.h"
+#include "haar_all.h"
 
 #define DEFAULTM 1024
 #define DEFAULTN 1024
-
-void dhamt2_initial( double* A, double* B, double* W, int M, int N, int lda, int ldb );
-void dhamt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb );
-void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dhamt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dhamt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dhamt2_fma_block( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 
 typedef void (*functionvariant_t)( double*, double*, double*, int, int, int, int );
 #define FUNC_DEF(func) { func, #func },
