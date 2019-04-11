@@ -29,15 +29,31 @@
 void dda6mt2_initial( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 void dda6mt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 
+typedef void (*functionvariant_t)( double*, double*, double*, int, int, int, int );
+#define FUNC_DEF(func) { func, #func },
+typedef struct {
+    functionvariant_t func;
+    const char * name;
+} implem_t;
+
 int main( int argc, char** argv ){
 
-    int M, N;
+    int M, N, i;
     double* mat;
     double* work;
     double* wor2;
     double* reference;
     double cond = 1e10;
     
+    implem_t direct[] = {
+        FUNC_DEF( dda6mt2_initial )
+        FUNC_DEF( dda6mt2_loop )
+        NULL
+    };
+    implem_t backward[] = {
+       NULL
+    };
+
     if( argc < 3 ) {
         M = DEFAULTM;
         N = DEFAULTN;
@@ -58,20 +74,36 @@ int main( int argc, char** argv ){
 
     /* Initial: point of reference */
     
-    dda6mt2_initial( mat, reference, wor2, M, N, N, N );    
+    i = 0;
+    direct[i].func( mat, work, wor2, M, N, N, N );    
+    i++;
 
-    dda6mt2_loop( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dda4mt2_loop: OK\n" );
-    } else {
-        fprintf( stderr, "dda4mt2_loop does not match the reference\n" );
+    while( direct[i].func != NULL ) {
+        direct[i].func( mat, work, wor2, M, N, N, N );    
+        if( compareMatrices( reference, work, M, N ) ) {
+            fprintf( stderr, "%s: OK\n", direct[i].name );
+        } else {
+            fprintf( stderr, "%s does not match the reference\n", direct[i].name );
+        }
+        i++;
     }
 
-
+    /* Backward transform */
+    
+    i = 0;
+    while( backward[i].func != NULL ) {
+        backward[i].func( work, reference, wor2, M, N, N, N );    
+        if( compareMatrices( reference, mat, M, N ) ) {
+            fprintf( stderr, "%s: OK\n", backward[i].name );
+        } else {
+            fprintf( stderr, "%s does not match the reference\n", backward[i].name );
+        }
+        i++;
+    }
+    
     free( mat );
     free( work );
     free( wor2 );
     free( reference );
     return EXIT_SUCCESS;
 }
-

@@ -14,6 +14,9 @@ haar_test: haar_test.o ../haar.o ../matrices.o
 daub4_test: daub4_test.o ../daub4.o ../matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
 
+daub6_test: daub6_test.o ../daub6.o ../matrices.o
+	$(LD) $(LDOPT) -o $@ $^ $(LIBS)
+
 daub4_bench: daub4_bench.o ../daub4.o ../matrices.o
 	$(LD) $(LDOPT) -o $@ $^ $(LIBS) $(BENCHS) -lpapi
 

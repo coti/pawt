@@ -35,16 +35,36 @@ void dhamt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int 
 void dhamt2_fma_block( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 
+typedef void (*functionvariant_t)( double*, double*, double*, int, int, int, int );
+#define FUNC_DEF(func) { func, #func },
+typedef struct {
+    functionvariant_t func;
+    const char * name;
+} implem_t;
 
 int main( int argc, char** argv ){
 
-    int M, N;
+    int M, N, i;
     double* mat;
     double* work;
     double* wor2;
     double* reference;
     double cond = 1e10;
-    
+
+    implem_t direct[] = {
+        FUNC_DEF( dhamt2_initial )
+        FUNC_DEF( dhamt2_loop )
+        FUNC_DEF( dhamt2_avx )
+        FUNC_DEF( dhamt2_avx_gather )
+        FUNC_DEF( dhamt2_sse )
+        FUNC_DEF( dhamt2_fma )
+        FUNC_DEF( dhamt2_fma_reuse )
+        NULL
+    };
+    implem_t backward[] = {
+       NULL
+    };
+
     if( argc < 3 ) {
         M = DEFAULTM;
         N = DEFAULTN;
@@ -59,56 +79,39 @@ int main( int argc, char** argv ){
     memset( wor2, 0, M*N*sizeof( double ) );
 
     /* Ill-conditionned matrix */
-    
+
     //    dillrandom( mat, M, N, N, cond, work, wor2 );
     drandom( mat, M, N );
 
     /* Initial: point of reference */
     
-    dhamt2_initial( mat, reference, wor2, M, N, N, N );    
+    i = 0;
+    direct[i].func( mat, work, wor2, M, N, N, N );    
+    i++;
 
-    dhamt2_loop( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dhamt2_loop: OK\n" );
-    } else {
-        fprintf( stderr, "dhamt2_loop does not match the reference\n" );
+    while( direct[i].func != NULL ) {
+        direct[i].func( mat, work, wor2, M, N, N, N );    
+        if( compareMatrices( reference, work, M, N ) ) {
+            fprintf( stderr, "%s: OK\n", direct[i].name );
+        } else {
+            fprintf( stderr, "%s does not match the reference\n", direct[i].name );
+        }
+        i++;
     }
 
-    dhamt2_avx( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dhamt2_avx: OK\n" );
-    } else {
-        fprintf( stderr, "dhamt2_avx does not match the reference\n" );
+    /* Backward transform */
+    
+    i = 0;
+    while( backward[i].func != NULL ) {
+        backward[i].func( work, reference, wor2, M, N, N, N );    
+        if( compareMatrices( reference, mat, M, N ) ) {
+            fprintf( stderr, "%s: OK\n", backward[i].name );
+        } else {
+            fprintf( stderr, "%s does not match the reference\n", backward[i].name );
+        }
+        i++;
     }
-
-    dhamt2_avx_gather( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dhamt2_avx_gather: OK\n" );
-    } else {
-        fprintf( stderr, "dhamt2_avx_gather does not match the reference\n" );
-    }
-
-    dhamt2_sse( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dhamt2_sse: OK\n" );
-    } else {
-        fprintf( stderr, "dhamt2_sse does not match the reference\n" );
-    }
-
-    dhamt2_fma( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dhamt2_fma: OK\n" );
-    } else {
-        fprintf( stderr, "dhamt2_fma does not match the reference\n" );
-    }
-
-    dhamt2_fma_reuse( mat, work, wor2, M, N, N, N );    
-    if( compareMatrices( reference, work, M, N ) ) {
-        fprintf( stderr, "dhamt2_fma_reuse: OK\n" );
-    } else {
-        fprintf( stderr, "dhamt2_fma_reuse does not match the reference\n" );
-    }
-
+    
     free( mat );
     free( work );
     free( wor2 );
