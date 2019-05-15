@@ -126,10 +126,10 @@ int main( int argc, char** argv ){
     while( s < N ) {
         
         for( i = 0 ; backward[i].func != NULL ; i++ ) {
-            drandom( work, N, N ); // re-init
+            drandom( work, s, s ); // re-init
             STARTCOUNTERS();
             for( j = 0 ; j < NUMRUN ; j++ ) {
-                backward[i].func( work, mat, wor2, N, N, N, N );
+                backward[i].func( work, mat, wor2, s, s, s, s );
             }
             ENDCOUNTERS( backward[i].name );
         }
