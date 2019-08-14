@@ -27,7 +27,7 @@ extern __inline__ long long rdtsc(void) {
     } while( 0 );
 #define ENDCOUNTERS( name ) do {                                        \
         t_end = rdtsc();                                                \
-        printf( "%*s \t %d \t %d \t %lld \t %lld \n",25, name, s, s, (t_end - t_start ) / NUMRUN, (t_end - t_start ) / ( s  s * NUMRUN ) ); \
+        printf( "%*s \t %d \t %d \t %lld \t %lld \n",25, name, s, s, (t_end - t_start ) / NUMRUN, (t_end - t_start ) / ( s * s * NUMRUN ) ); \
     } while( 0 );
 #endif
 
