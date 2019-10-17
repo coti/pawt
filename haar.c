@@ -424,6 +424,52 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     }        
 }
 
+/* Reuse the intermediate work AVX registers rather than storing in the W matrix. */
+ 
+void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m512d w1, w2, w2m, w1m, w;
+    __m512d a1, a2, a3, a4;
+    const __m512d deux = _mm512_set1_pd( 0.5 );
+
+    /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=8 ){
+            
+	  a1 = _mm512_set_pd( A[(j*2)*lda + 2*i + 14], A[(j*2)*lda + 2*i + 12], A[(j*2)*lda + 2*i + 10], A[(j*2)*lda + 2*i + 8], A[(j*2)*lda + 2*i + 6], A[(j*2)*lda + 2*i + 4], A[(j*2)*lda + 2*i + 2], A[(j*2)*lda + 2*i] );
+	  a2 = _mm512_set_pd( A[(j*2)*lda + 2*i + 14], A[(j*2)*lda + 2*i + 13], A[(j*2)*lda + 2*i + 11], A[(j*2)*lda + 2*i + 9], A[(j*2)*lda + 2*i + 7], A[(j*2)*lda + 2*i + 5], A[(j*2)*lda + 2*i + 3], A[(j*2)*lda + 2*i + 1] );
+	  
+	  a3 = _mm512_set_pd(  A[(j*2+1)*lda + 2*i + 14], A[(j*2+1)*lda + 2*i + 12], A[(j*2+1)*lda + 2*i + 10], A[(j*2+1)*lda + 2*i + 8] , A[(j*2+1)*lda + 2*i + 6], A[(j*2+1)*lda + 2*i + 4], A[(j*2+1)*lda + 2*i + 2], A[(j*2+1)*lda + 2*i] );
+	  a4 = _mm512_set_pd(  A[(j*2+1)*lda + 2*i + 15], A[(j*2+1)*lda + 2*i + 13], A[(j*2+1)*lda + 2*i + 11], A[(j*2+1)*lda + 2*i + 9], A[(j*2+1)*lda + 2*i + 7], A[(j*2+1)*lda + 2*i + 5], A[(j*2+1)*lda + 2*i + 3], A[(j*2+1)*lda + 2*i + 1] );
+            
+            /* lines: W1 = A[i][j] + A[i+1][j] = A1 + A2 */
+            
+            w1 =_mm512_fmadd_pd( a1, deux, _mm512_mul_pd( a2, deux ) );
+            w1m =_mm512_fmsub_pd( a1, deux, _mm512_mul_pd( a2, deux ) );
+
+             /* lines: W2 = A[i][j+1] + A[i+1][j+1] = A3 + A4 */
+
+            w2 =_mm512_fmadd_pd( a3, deux, _mm512_mul_pd( a4, deux ) );
+            w2m =_mm512_fmsub_pd( a3, deux, _mm512_mul_pd( a4, deux ) );
+
+            /* columns: W = W1 + W2 = W[i][j] + W[j][j+1] */
+            
+            w =_mm512_fmadd_pd( w1, deux, _mm512_mul_pd( w2, deux ) );
+            _mm512_storeu_pd( &B[ j*ldb + i ], w ); 
+
+            w =_mm512_fmadd_pd( w1m, deux, _mm512_mul_pd( w2m, deux ) );
+            _mm512_storeu_pd( &B[ j*ldb + i + N/2], w );
+
+            w =_mm512_fmsub_pd( w1, deux, _mm512_mul_pd( w2, deux ) );
+            _mm512_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
+
+            w =_mm512_fmsub_pd( w1m, deux, _mm512_mul_pd( w2m, deux ) );
+            _mm512_storeu_pd( &B[ (j+M/2)*ldb + i + N/2], w ); 
+        }
+    }        
+}
+
 /*
 c     Compute 2D Haar inverse transform of a matrix
 c
@@ -583,6 +629,42 @@ void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
             
             _mm256_storeu_pd( &B[ 2*j*N + 2*i ], w2 );
             _mm256_storeu_pd( &B[ (2*j+1)*N + 2*i ], w2m );
+
+        }
+    }
+    
+}
+
+ void dhimt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+    int i, j;
+    __m512d w1, w2, w1m, w2m, a1, a2, a3, a4;
+    const __m512d sign = _mm512_set_pd( -1, 1, -1, 1, -1, 1, -1, 1 );
+    const __m512d moinsun = _mm512_set1_pd( -1 );
+
+    /* dim 1 */
+
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=4 ){ 
+            a1 = _mm512_set_pd( A[j*lda + i + 3], A[j*lda + i + 3], A[j*lda + i + 2], A[j*lda + i + 2], A[j*lda + i + 1], A[j*lda + i + 1], A[j*lda + i], A[j*lda + i] );
+            a2 = _mm512_set_pd( A[j*lda + i + 3 + N/2], A[j*lda + i + 3 + N/2], A[j*lda + i + 2 + N/2], A[j*lda + i + 2 + N/2], A[j*lda + i + 1 + N/2], A[j*lda + i + 1 + N/2], A[j*lda + i + N/2], A[j*lda + i + N/2] );
+
+            a3 = _mm512_set_pd( A[( j + M/2 )*lda + i + 3], A[( j + M/2 )*lda + i + 3], A[( j + M/2 )*lda + i + 2], A[( j + M/2 )*lda + i + 2], A[( j + M/2 )*lda + i + 1], A[( j + M/2 )*lda + i + 1], A[( j + M/2 )*lda + i], A[( j + M/2 )*lda + i] );
+            a4 = _mm512_set_pd( A[( j + M/2 )*lda + i + 3 + N/2], A[( j + M/2 )*lda + i + 3 + N/2], A[( j + M/2 )*lda + i + 2 + N/2], A[( j + M/2 )*lda + i + 2 + N/2], A[( j + M/2 )*lda + i + 1 + N/2], A[( j + M/2 )*lda + i + 1 + N/2], A[( j + M/2 )*lda + i + N/2], A[( j + M/2 )*lda + i + N/2] );
+
+            /* Dim 1 */
+            
+            w1  = _mm512_fmadd_pd( a2, sign, a1 );
+            w1m = _mm512_fmadd_pd( a4, sign, a3 );
+
+            /* Dim 2 */
+
+            w2  = _mm512_add_pd( w1, w1m );
+            w2m = _mm512_fmadd_pd( w1m, moinsun, w1 );
+
+            /* Store */
+            
+            _mm512_storeu_pd( &B[ 2*j*N + 2*i ], w2 );
+            _mm512_storeu_pd( &B[ (2*j+1)*N + 2*i ], w2m );
 
         }
     }
