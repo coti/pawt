@@ -1,6 +1,6 @@
 /* This file is part of pawt.
  *
- * Calling program for the 2D Daubechies D4 transform dda4mt2.
+ * Calling program for the 2D Daubechies D8 transform dda8mt2.
  *
  * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
  *                Sorbonne-Paris-Cité. All rights reserved.
@@ -28,8 +28,8 @@
 
 #define NUMRUN 1
 
-#define DEFAULTM 16
-#define DEFAULTN 16
+#define DEFAULTM 8
+#define DEFAULTN 8
 
 
 void DDA8MT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
@@ -54,7 +54,14 @@ int main( int argc, char** argv ){
     double cond = 1e10;
 
 #ifdef DEBUG_BASARAB
-    double basarab[64] =  {0.1206, 0.6438, 0.0623, 0.4903, 0.3061, 0.8164, 0.9972, 0.4246 , 0.7675, 0.8468, 0.1681, 0.4045, 0.3025, 0.7730, 0.3156, 0.8355, 0.3103, 0.4922, 0.0378, 0.6989, 0.1704, 0.4167, 0.1199, 0.2274 , 0.3527, 0.1086, 0.8734, 0.9629, 0.5332, 0.4056, 0.8503, 0.1604 , 0.7382, 0.8833, 0.3093, 0.4463, 0.0403, 0.9273, 0.7538, 0.5861, 0.7008, 0.9463, 0.4652, 0.3890, 0.4388, 0.3014, 0.8448, 0.0802, 0.6985, 0.4762, 0.1508, 0.5055, 0.8133, 0.1878, 0.3805, 0.5890, 0.6836, 0.0463, 0.0702, 0.4994, 0.2996, 0.6929, 0.0510, 0.6763  };
+    double basarab[64] =  {0.1206, 0.6438, 0.0623, 0.4903, 0.3061, 0.8164, 0.9972, 0.4246 ,
+                           0.7675, 0.8468, 0.1681, 0.4045, 0.3025, 0.7730, 0.3156, 0.8355,
+                           0.3103, 0.4922, 0.0378, 0.6989, 0.1704, 0.4167, 0.1199, 0.2274 ,
+                           0.3527, 0.1086, 0.8734, 0.9629, 0.5332, 0.4056, 0.8503, 0.1604 ,
+                           0.7382, 0.8833, 0.3093, 0.4463, 0.0403, 0.9273, 0.7538, 0.5861,
+                           0.7008, 0.9463, 0.4652, 0.3890, 0.4388, 0.3014, 0.8448, 0.0802,
+                           0.6985, 0.4762, 0.1508, 0.5055, 0.8133, 0.1878, 0.3805, 0.5890,
+                           0.6836, 0.0463, 0.0702, 0.4994, 0.2996, 0.6929, 0.0510, 0.6763  };
 
     double solution[64] = { 1.219168 ,   0.482832 ,   1.111272  ,  1.119340  ,  -0.581676   , -0.357569  ,  -0.187398  ,  -0.228104     ,
                           0.604543  ,  1.379706  ,  0.964038  ,  0.769794 ,   -0.099787  ,  -0.306024  ,  0.295851 ,   0.050487     ,
@@ -91,8 +98,6 @@ int main( int argc, char** argv ){
     }
 #ifndef DEBUG_BASARAB
     mat  = (double*) malloc( M*N*sizeof( double));
-#else
-    mat = basarab;
 #endif
     work = (double*) malloc( M*N*sizeof( double));
     wor2 = (double*) malloc( M*N*sizeof( double));
@@ -101,10 +106,14 @@ int main( int argc, char** argv ){
     /* Ill-conditionned matrix */
     
     //    dillrandom( mat, M, N, N, cond, work, wor2 );
-        drandom( mat, M, N );
+#ifndef DEBUG_BASARAB
+       drandom( mat, M, N );
+#else
+    mat = &(basarab[0]);
+#endif
     //identity( mat, M, N );
         // printmatrixOctave( mat, M, N );
-        //  printmatrixOctave( basarab, M, N );
+    //  printmatrixOctave( basarab, M, N );
     //printmatrix( mat, M, N );
     
 #ifdef WITHPAPI
@@ -122,9 +131,10 @@ int main( int argc, char** argv ){
         //         printmatrix( work, M, N );
     }
 #ifdef DEBUG_BASARAB
+    // printmatrixOctave( mat, M, N );
     printmatrixOctave( wor2, M, N );
     printmatrixOctave( work, M, N );
-    printmatrixOctave( solution, M, N );
+    //  printmatrixOctave( solution, M, N );
 #endif
     
 #ifdef WITHPAPI

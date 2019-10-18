@@ -1,9 +1,9 @@
 CC = gcc
-CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store
+CCOPT = -g -Wall -O3 -march=native -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store -I/packages/papi/5.6.0/include/ -I$(HOME)/tools/include
 LD = gcc
 LDOPT = 
-LIBS =  -llapacke -lopenblas
-BENCHS = -DWITHPAPI
+LIBS = -L$(HOME)/tools/lib   -lopenblas
+BENCHS = -DWITHPAPI -L/packages/papi/5.6.0/lib
 
 
 all: haar_test daub4_test

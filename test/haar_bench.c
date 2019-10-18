@@ -52,12 +52,15 @@ int main( int argc, char** argv ){
         FUNC_DEF( dhamt2_sse )
         FUNC_DEF( dhamt2_fma )
         FUNC_DEF( dhamt2_fma_reuse )
+        FUNC_DEF( dhamt2_fma512_reuse )
         NULL
     };
     implem_t backward[] = {
         FUNC_DEF( dhimt2_initial )
         FUNC_DEF( dhimt2_fma )
         FUNC_DEF( dhimt2_fma_gather )
+        FUNC_DEF( dhimt2_fma_reuse )
+        FUNC_DEF( dhimt2_fma512_reuse )
         NULL
     };
 
@@ -75,7 +78,7 @@ int main( int argc, char** argv ){
     long long t_start, t_end;
 #endif
 
-    if( argc < 3 ) {
+    if( argc < 2 ) {
         N = DEFAULTN;
     } else {
         N = atoi( argv[1] );

@@ -55,6 +55,7 @@ int main( int argc, char** argv ){
         FUNC_DEF( dda4mt2_fma_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse_gather )
+        FUNC_DEF( dda4mt2_fma512_reuse )
        NULL
     };
     implem_t backward[] = {
@@ -66,6 +67,7 @@ int main( int argc, char** argv ){
         FUNC_DEF( ddi4mt2_fma2 )
         FUNC_DEF( ddi4mt2_fma2_gather )
         FUNC_DEF( ddi4mt2_fma_reuse )
+        FUNC_DEF( ddi4mt2_fma512_reuse )
        NULL
     };
 

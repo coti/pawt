@@ -6,11 +6,13 @@
 # dhamt2_sse: sse implementation for older process (pre-Haswell)
 # dhamt2_fma: fused multiply-and-add implementation
 # dhamt2_fma_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix
+# dhamt2_fma512_reuse: fused multiply-and-add implementation using indermediate AVX registers rather than W matrix with AVX512
 ## Possible DHIMT values:
 # dhimt2_initial
 # dhimt2_fma
 # dhimt2_fma_gather
 # dhimt2_fma_reuse
+# dhimt2_fma512_reuse
 
 DHAMT=dhamt2_fma_reuse
 DHIMT=dhimt2_fma_reuse
@@ -24,6 +26,7 @@ DHIMT=dhimt2_fma_reuse
 # dda4mt2_fma_reuse
 # dda4mt2_fma2_reuse
 # dda4mt2_fma2_reuse_gather
+# dda4mt2_fma512_reuse
 
 ## Possible DDI4MT values:
 # dhimt2_loop
@@ -34,9 +37,10 @@ DHIMT=dhimt2_fma_reuse
 # dhimt2_fma2
 # dhimt2_fma2_gather
 # ddi4mt2_fma_reuse
+# ddi4mt2_fma512_reuse
 
-DDA4MT=dda4mt2_initial
-DDI4MT=ddi4mt2_fma_reuse
+DDA4MT=dda4mt2_fma512_reuse
+DDI4MT=ddi4mt2_fma512_reuse
 
 
 
@@ -60,10 +64,10 @@ DDA8MT=dda8mt2_initial
 ARCHOPT = -march=native
 ALIGNOPT = -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store 
 CC = gcc
-CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDHIMT=$(DHIMT) -DDDA4MT=$(DDA4MT) -DDDI4MT=$(DDI4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) 
+CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDHIMT=$(DHIMT) -DDDA4MT=$(DDA4MT) -DDDI4MT=$(DDI4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) -I$(HOME)/tools/include  -I/packages/papi/5.6.0/include
 LD = gcc
 LDOPT = 
-LIBS =  -llapacke -lopenblas -lpapi
+LIBS = -L$(HOME)/tools/lib -lopenblas -L/packages/papi/5.6.0/lib -lpapi
 
 all: minitest_daub6
 
