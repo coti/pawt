@@ -616,6 +616,116 @@ void dda4mt2_fma_reuse( double* restrict A, double* restrict B, double* restrict
 
 }
 
+void dda4mt2_fma512_reuse( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j;
+
+    __m512d a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, aa, ab, ac, ad, ae, af;
+    __m512d w, s0, s1, w0, w0m, w1, w1m, w2, w2m, w3, w3m;
+    __m512d ah0, ah1, ah2, ah3;
+    __m512d ag0, ag1, ag2, ag3;
+    
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+    ah0 = _mm512_set1_pd( h0 );
+    ah1 = _mm512_set1_pd( h1 );
+    ah2 = _mm512_set1_pd( h2 );
+    ah3 = _mm512_set1_pd( h3 );
+    ag0 = _mm512_set1_pd( g0 );
+    ag1 = _mm512_set1_pd( g1 );
+    ag2 = _mm512_set1_pd( g2 );
+    ag3 = _mm512_set1_pd( g3 );
+
+    /* dim 1 */
+    
+    for( j = 0 ; j < M / 2; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=8 ){
+
+	  a0 = _mm512_set_pd( A[ (j*2)*lda + ( 2*i + 14 ) % N],  A[ (j*2)*lda + ( 2*i + 12 ) % N], A[(j*2)*lda + ( 2*i + 10 ) % N ], A[(j*2)*lda + ( 2*i + 8 ) % N ], A[ (j*2)*lda + ( 2*i + 6 ) % N],  A[ (j*2)*lda + ( 2*i + 4 ) % N], A[(j*2)*lda + 2*i + 2 ], A[(j*2)*lda + 2*i] );
+	  a1 = _mm512_set_pd( A[ (j*2)*lda + ( 2*i + 15 ) % N],  A[ (j*2)*lda + ( 2*i + 13 ) % N],  A[ (j*2)*lda + ( 2*i + 11 ) % N ],   A[ (j*2)*lda + ( 2*i + 9 ) % N ],  A[ (j*2)*lda + ( 2*i + 7 ) % N],  A[ (j*2)*lda + ( 2*i + 5 ) % N],  A[ (j*2)*lda + 2*i + 3 ],   A[ (j*2)*lda + 2*i + 1] );
+	  a2 = _mm512_set_pd( A[ (j*2)*lda + ( 2*i + 16 ) % N],  A[ (j*2)*lda + ( 2*i + 14 ) % N],  A[ (j*2)*lda + ( 2*i + 12 ) % N ],   A[ (j*2)*lda + ( 2*i + 10 ) % N ],  A[ (j*2)*lda + ( 2*i + 8 ) % N],  A[ (j*2)*lda + ( 2*i + 6 ) % N],  A[ (j*2)*lda + 2*i + 4 ],   A[ (j*2)*lda + 2*i + 2 ]);
+	  a3 = _mm512_set_pd( A[ (j*2)*lda + ( 2*i + 17 ) % N],  A[ (j*2)*lda + ( 2*i + 15 ) % N],  A[ (j*2)*lda + ( 2*i + 13 ) % N ],   A[ (j*2)*lda + ( 2*i + 11 ) % N ], A[ (j*2)*lda + ( 2*i + 9 ) % N],  A[ (j*2)*lda + ( 2*i + 7 ) % N],  A[ (j*2)*lda + 2*i + 5 ],   A[ (j*2)*lda + 2*i + 3 ] );
+	  
+	  a4 = _mm512_set_pd( A[ (j*2+1)*lda + ( 2*i + 14 ) % N],  A[ (j*2+1)*lda + ( 2*i + 12 ) % N], A[(j*2+1)*lda + ( 2*i + 10 ) % N ], A[(j*2+1)*lda + ( 2*i + 8 ) % N ], A[(j*2+1)*lda + ( 2*i + 6 ) % N],  A[ (j*2+1)*lda + ( 2*i + 4 ) % N], A[(j*2+1)*lda + 2*i + 2 ], A[(j*2+1)*lda + 2*i] );
+	  a5 = _mm512_set_pd( A[ (j*2+1)*lda + ( 2*i + 15 ) % N],  A[ (j*2+1)*lda + ( 2*i + 13 ) % N],  A[ (j*2+1)*lda + ( 2*i + 11 ) % N ],   A[ (j*2+1)*lda + ( 2*i + 9 ) % N ],  A[ (j*2+1)*lda + ( 2*i + 7 ) % N],  A[ (j*2+1)*lda + ( 2*i + 5 ) % N],  A[ (j*2+1)*lda + 2*i + 3 ],   A[ (j*2+1)*lda + 2*i + 1] );
+	  a6 = _mm512_set_pd( A[ (j*2+1)*lda + ( 2*i + 16 ) % N],  A[ (j*2+1)*lda + ( 2*i + 14 ) % N],  A[ (j*2+1)*lda + ( 2*i + 12 ) % N ],   A[ (j*2+1)*lda + ( 2*i + 10 ) % N ], A[ (j*2+1)*lda + ( 2*i + 8 ) % N],  A[ (j*2+1)*lda + ( 2*i + 6 ) % N],  A[ (j*2+1)*lda + 2*i + 4 ],   A[ (j*2+1)*lda + 2*i + 2 ]);
+	  a7 = _mm512_set_pd( A[ (j*2+1)*lda + ( 2*i + 17 ) % N],  A[ (j*2+1)*lda + ( 2*i + 15 ) % N],  A[ (j*2+1)*lda + ( 2*i + 13 ) % N ],   A[ (j*2+1)*lda + ( 2*i + 11 ) % N ],  A[ (j*2+1)*lda + ( 2*i + 9 ) % N],  A[ (j*2+1)*lda + ( 2*i + 7 ) % N],  A[ (j*2+1)*lda + 2*i + 5 ],   A[ (j*2+1)*lda + 2*i + 3 ] );
+	  
+	  a8 = _mm512_set_pd( A[ ((j*2+2)%M)*lda + ( 2*i + 14 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 12 ) % N], A[((j*2+2)%M)*lda + ( 2*i + 10 ) % N ], A[((j*2+2)%M)*lda + ( 2*i + 8 ) % N ], A[((j*2+2)%M)*lda + ( 2*i + 6 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 4 ) % N], A[((j*2+2)%M)*lda + 2*i + 2 ], A[((j*2+2)%M)*lda + 2*i] );
+	  a9 = _mm512_set_pd( A[ ((j*2+2)%M)*lda + ( 2*i + 15 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 13 ) % N], A[((j*2+2)%M)*lda + ( 2*i + 11 ) % N ], A[((j*2+2)%M)*lda + ( 2*i + 9 ) % N ], A[ ((j*2+2)%M)*lda + ( 2*i + 7 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 5 ) % N],  A[ ((j*2+2)%M)*lda + 2*i + 3 ],   A[ ((j*2+2)%M)*lda + 2*i + 1] );
+	  aa = _mm512_set_pd( A[ ((j*2+2)%M)*lda + ( 2*i + 16 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 14 ) % N], A[((j*2+2)%M)*lda + ( 2*i + 12 ) % N ], A[((j*2+2)%M)*lda + ( 2*i + 10 ) % N ], A[ ((j*2+2)%M)*lda + ( 2*i + 8 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 6 ) % N],  A[ ((j*2+2)%M)*lda + 2*i + 4 ],   A[ ((j*2+2)%M)*lda + 2*i + 2 ]);
+	  ab = _mm512_set_pd( A[ ((j*2+2)%M)*lda + ( 2*i + 17 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 15 ) % N], A[((j*2+2)%M)*lda + ( 2*i + 13 ) % N ], A[((j*2+2)%M)*lda + ( 2*i + 11 ) % N ], A[ ((j*2+2)%M)*lda + ( 2*i + 9 ) % N],  A[ ((j*2+2)%M)*lda + ( 2*i + 7 ) % N],  A[ ((j*2+2)%M)*lda + 2*i + 5 ],   A[ ((j*2+2)%M)*lda + 2*i + 3 ] );
+
+	  ac = _mm512_set_pd( A[ ((j*2+3)%M)*lda + ( 2*i + 14 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 12 ) % N], A[((j*2+3)%M)*lda + ( 2*i + 10 ) % N ], A[((j*2+3)%M)*lda + ( 2*i + 8 ) % N ], A[((j*2+3)%M)*lda + ( 2*i + 6 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 4 ) % N], A[((j*2+3)%M)*lda + 2*i + 2 ], A[((j*2+3)%M)*lda + 2*i] );
+	  ad = _mm512_set_pd( A[ ((j*2+3)%M)*lda + ( 2*i + 15 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 13 ) % N], A[((j*2+3)%M)*lda + ( 2*i + 11 ) % N ], A[((j*2+3)%M)*lda + ( 2*i + 9 ) % N ], A[ ((j*2+3)%M)*lda + ( 2*i + 7 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 5 ) % N],  A[ ((j*2+3)%M)*lda + 2*i + 3 ],   A[ ((j*2+3)%M)*lda + 2*i + 1] );
+	  ae = _mm512_set_pd( A[ ((j*2+3)%M)*lda + ( 2*i + 16 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 14 ) % N], A[((j*2+3)%M)*lda + ( 2*i + 12 ) % N ], A[((j*2+3)%M)*lda + ( 2*i + 10 ) % N ], A[ ((j*2+3)%M)*lda + ( 2*i + 8 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 6 ) % N],  A[ ((j*2+3)%M)*lda + 2*i + 4 ],   A[ ((j*2+3)%M)*lda + 2*i + 2 ]);
+	  af = _mm512_set_pd( A[ ((j*2+3)%M)*lda + ( 2*i + 17 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 15 ) % N], A[((j*2+3)%M)*lda + ( 2*i + 13 ) % N ], A[((j*2+3)%M)*lda + ( 2*i + 11 ) % N ], A[ ((j*2+3)%M)*lda + ( 2*i + 9 ) % N],  A[ ((j*2+3)%M)*lda + ( 2*i + 7 ) % N],  A[ ((j*2+3)%M)*lda + 2*i + 5 ],   A[ ((j*2+3)%M)*lda + 2*i + 3 ] );
+
+            /* Lines: W1 = A[i][j] + A[i+1][j] + A[i+2][j] + A[i+3][j] = A1 + A2 + A3 + A4 */
+
+            s0 = _mm512_fmadd_pd( a0, ah0,  _mm512_mul_pd( a1, ah1 ) );
+            s1 = _mm512_fmadd_pd( a2, ah2,  _mm512_mul_pd( a3, ah3 ) );
+            w0 = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( a0, ag0,  _mm512_mul_pd( a1, ag1 ) );
+            s1 = _mm512_fmadd_pd( a2, ag2,  _mm512_mul_pd( a3, ag3 ) );
+            w0m = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( a4, ah0,  _mm512_mul_pd( a5, ah1 ) );
+            s1 = _mm512_fmadd_pd( a6, ah2,  _mm512_mul_pd( a7, ah3 ) );
+            w1 = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( a4, ag0,  _mm512_mul_pd( a5, ag1 ) );
+            s1 = _mm512_fmadd_pd( a6, ag2,  _mm512_mul_pd( a7, ag3 ) );
+            w1m = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( a8, ah0,  _mm512_mul_pd( a9, ah1 ) );
+            s1 = _mm512_fmadd_pd( aa, ah2,  _mm512_mul_pd( ab, ah3 ) );
+            w2 = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( a8, ag0,  _mm512_mul_pd( a9, ag1 ) );
+            s1 = _mm512_fmadd_pd( aa, ag2,  _mm512_mul_pd( ab, ag3 ) );
+            w2m = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( ac, ah0,  _mm512_mul_pd( ad, ah1 ) );
+            s1 = _mm512_fmadd_pd( ae, ah2,  _mm512_mul_pd( af, ah3 ) );
+            w3 = _mm512_add_pd( s0, s1 );
+            
+            s0 = _mm512_fmadd_pd( ac, ag0,  _mm512_mul_pd( ad, ag1 ) );
+            s1 = _mm512_fmadd_pd( ae, ag2,  _mm512_mul_pd( af, ag3 ) );
+            w3m = _mm512_add_pd( s0, s1 );
+
+            /* Columns: B = W1 + W2 + W3 + W4 = W[i][j] + W[j][j+1] + W[j][j+2] + W[j][j+3] */
+
+            s0 = _mm512_fmadd_pd( w2, ah2, _mm512_mul_pd( w3, ah3 ) );
+            s1 = _mm512_fmadd_pd( w1, ah1, s0 );
+            w = _mm512_fmadd_pd( w0, ah0, s1 );
+            _mm512_storeu_pd( &B[ 1*j*ldb + i ], w ); 
+
+            s0 = _mm512_fmadd_pd( w2, ag2, _mm512_mul_pd( w3, ag3 ) );
+            s1 = _mm512_fmadd_pd( w1, ag1, s0 );
+            w = _mm512_fmadd_pd( w0, ag0, s1 );
+            _mm512_storeu_pd( &B[ (1*j + M/2)*ldb + i ], w ); 
+
+            s0 = _mm512_fmadd_pd( w2m, ah2, _mm512_mul_pd( w3m, ah3 ) );
+            s1 = _mm512_fmadd_pd( w1m, ah1, s0 );
+            w = _mm512_fmadd_pd( w0m, ah0, s1 );
+            _mm512_storeu_pd( &B[ 1*j*ldb + i + N/2 ], w ); 
+
+            s0 = _mm512_fmadd_pd( w2m, ag2, _mm512_mul_pd( w3m, ag3 ) );
+            s1 = _mm512_fmadd_pd( w1m, ag1, s0 );
+            w = _mm512_fmadd_pd( w0m, ag0, s1 );
+            _mm512_storeu_pd( &B[ (1*j + M/2)*ldb + i + N / 2 ], w ); 
+
+        }
+   }
+
+}
+
 /* Based on the order of operations performend by fma2 */
  
 void dda4mt2_fma2_reuse( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
@@ -1656,6 +1766,102 @@ void ddi4mt2_fma_reuse( double* restrict A, double* restrict B, double* restrict
             s3 = _mm256_fmadd_pd( w0, ah1, s0 );
 
             _mm256_storeu_pd( &B[ (2*j+1)*ldb + 2*i], s3 );
+
+        }
+    }
+
+}
+ 
+ #ifdef  __cplusplus
+void ddi4mt2_fma512_reuse( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
+void ddi4mt2_fma512_reuse( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j;
+    
+    __m512d w0, w1, w2, w3, s0, s1, s2, s3, s4, s5, s6, s7;
+     __m512d a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15;
+    __m512d ah0, ah1, ah2, ah3;
+    __m512d ag0, ag1, ag2, ag3;
+    __m512d hbegin, hend, gbegin, gend;
+
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+    hbegin = _mm512_set_pd( h1, h0, h1, h0, h1, h0, h1, h0 );
+    gbegin = _mm512_set_pd( g1, g0, g1, g0, g1, g0, g1, g0 );
+    hend = _mm512_set_pd( h3, h2, h3, h2, h3, h2, h3, h2 );
+    gend = _mm512_set_pd( g3, g2, g3, g2, g3, g2, g3, g2 );
+    ah0 = _mm512_set1_pd( h0 );
+    ah1 = _mm512_set1_pd( h1 );
+    ah2 = _mm512_set1_pd( h2 );
+    ah3 = _mm512_set1_pd( h3 );
+    ag0 = _mm512_set1_pd( g0 );
+    ag1 = _mm512_set1_pd( g1 );
+    ag2 = _mm512_set1_pd( g2 );
+    ag3 = _mm512_set1_pd( g3 );
+
+    
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N/2 ; i+=4 ) {
+	  a0 = _mm512_set_pd( A[j*lda + (i+3)], A[j*lda + (i+3)], A[j*lda + i + 2], A[j*lda + i + 2 ], A[j*lda + (i+1)], A[j*lda + (i+1)], A[j*lda + i], A[j*lda + i] );
+	  a1 = _mm512_set_pd( A[ j*lda + N / 2 + (i+3)], A[ j*lda + N / 2 + (i+3)], A[ j*lda + N / 2 + i + 2 ], A[ j*lda + N / 2 + i + 2 ],  A[ j*lda + N / 2 + (i+1)], A[ j*lda + N / 2 + (i+1)], A[ j*lda + N / 2 + i], A[ j*lda + N / 2 + i] );
+	  a2 = _mm512_set_pd( A[j*lda + ( (i+3) - 1 + N/2 ) % (lda/2)], A[j*lda + ( (i+3) - 1 + N/2 ) % (N/2)], A[j*lda + ( ( i + 2 ) - 1 + N/2 ) % (N/2) ], A[j*lda + ( ( i + 2 ) - 1 + N/2 ) % (N/2) ], A[j*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[j*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[j*lda + ( i - 1 + N/2 ) % (N/2) ], A[j*lda + ( i - 1 + N/2 ) % (N/2) ] );
+	  a3 = _mm512_set_pd(  A[ j*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))],  A[ j*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))], A[ j*lda + N / 2 + ( ( i + 2 ) - 1 + N/2) % ( N / 2 )], A[ j*lda + N / 2 + ( ( i + 2 ) - 1 + N/2) % ( N / 2 )],  A[ j*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ j*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ j*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ j*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+	  a4 = _mm512_set_pd( A[(j+M/2)*lda + (i+3)], A[(j+M/2)*lda + (i+3)], A[(j+M/2)*lda + (i+2)], A[(j+M/2)*lda + (i+2)], A[(j+M/2)*lda + (i+1)], A[(j+M/2)*lda + (i+1)], A[(j+M/2)*lda + i], A[(j+M/2)*lda + i] );
+	  a5 = _mm512_set_pd( A[ (j+M/2)*lda + N / 2 + (i+3)], A[ (j+M/2)*lda + N / 2 + (i+3)], A[ (j+M/2)*lda + N / 2 + (i+2)], A[ (j+M/2)*lda + N / 2 + (i+2)],  A[ (j+M/2)*lda + N / 2 + (i+1)], A[ (j+M/2)*lda + N / 2 + (i+1)], A[ (j+M/2)*lda + N / 2 + i], A[ (j+M/2)*lda + N / 2 + i] );
+	  a6 = _mm512_set_pd( A[(j+M/2)*lda + ( (i+3) - 1 + N/2 ) % (lda/2)], A[(j+M/2)*lda + ( (i+3) - 1 + N/2 ) % (N/2)], A[(j+M/2)*lda + ( (i+2) - 1 + N/2 ) % (N/2) ], A[(j+M/2)*lda + ( (i+2) - 1 + N/2 ) % (N/2) ],  A[(j+M/2)*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[(j+M/2)*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[(j+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ], A[(j+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
+	  a7 = _mm512_set_pd(  A[ (j+M/2)*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))],  A[ (j+M/2)*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))], A[ (j+M/2)*lda + N / 2 + ( (i+2) - 1 + N/2) % ( N / 2 )], A[ (j+M/2)*lda + N / 2 + ( (i+2) - 1 + N/2) % ( N / 2 )],  A[ (j+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ (j+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ (j+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ (j+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+	  a8 = _mm512_set_pd( A[((j-1+M/2)%(M/2))*lda + (i+3)], A[((j-1+M/2)%(M/2))*lda + (i+3)], A[((j-1+M/2)%(M/2))*lda + (i+2)], A[((j-1+M/2)%(M/2))*lda + (i+2)],  A[((j-1+M/2)%(M/2))*lda + (i+1)], A[((j-1+M/2)%(M/2))*lda + (i+1)], A[((j-1+M/2)%(M/2))*lda + i], A[((j-1+M/2)%(M/2))*lda + i] );	  
+	  a9 = _mm512_set_pd( A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+3)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+3)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+2)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+2)] ,  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+1)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+1)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + i], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + i] );
+  	  a10 = _mm512_set_pd( A[((j-1+M/2)%(M/2))*lda + ( (i+3) - 1 + N/2 ) % (lda/2)], A[((j-1+M/2)%(M/2))*lda + ( (i+3) - 1 + N/2 ) % (N/2)], A[((j-1+M/2)%(M/2))*lda + ( (i+2) - 1 + N/2 ) % (N/2) ], A[((j-1+M/2)%(M/2))*lda + ( (i+2) - 1 + N/2 ) % (N/2) ], A[((j-1+M/2)%(M/2))*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[((j-1+M/2)%(M/2))*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[((j-1+M/2)%(M/2))*lda + ( i - 1 + N/2 ) % (N/2) ], A[((j-1+M/2)%(M/2))*lda + ( i - 1 + N/2 ) % (N/2) ] );
+	  a11 = _mm512_set_pd(  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))],  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( (i+2) - 1 + N/2) % ( N / 2 )], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( (i+2) - 1 + N/2) % ( N / 2 )],  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+	  a12 = _mm512_set_pd( A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+3)], A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+3)], A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+2)],  A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+1)], A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+1)], A[(( j-1+M/2)%(M/2)+M/2)*lda + i], A[(( j-1+M/2)%(M/2)+M/2)*lda + i] );
+	  a13 = _mm512_set_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+3)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+3)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+2)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+2)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+1)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+1)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i] );
+	  a14 = _mm512_set_pd( A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+3) - 1 + N/2 ) % (lda/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+3) - 1 + N/2 ) % (N/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+2) - 1 + N/2 ) % (N/2) ], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+2) - 1 + N/2 ) % (N/2) ], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
+	  a15 = _mm512_set_pd(  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))],  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+3) - 1 + N/2) %(  N/2))], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( (i+2) - 1 + N/2) % ( N / 2 )], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( (i+2) - 1 + N/2) % ( N / 2 )], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+            
+            /* w = ( a0 * hbegin + ( a1 * gbegin ) ) + ( a2 * ( hend + (a3 * gend))) */
+            
+            s0 = _mm512_fmadd_pd( a0, hbegin,  _mm512_mul_pd( a1, gbegin ) );
+            s1 = _mm512_fmadd_pd( a2, hend,  _mm512_mul_pd( a3, gend ) );
+            
+            s2 = _mm512_fmadd_pd( a4, hbegin,  _mm512_mul_pd( a5, gbegin ) );
+            s3 = _mm512_fmadd_pd( a6, hend,  _mm512_mul_pd( a7, gend ) );
+
+            s4 = _mm512_fmadd_pd( a8, hbegin,  _mm512_mul_pd( a9, gbegin ) );
+            s5 = _mm512_fmadd_pd( a10, hend,  _mm512_mul_pd( a11, gend ) );
+
+            s6 = _mm512_fmadd_pd( a12, hbegin,  _mm512_mul_pd( a13, gbegin ) );
+            s7 = _mm512_fmadd_pd( a14, hend,  _mm512_mul_pd( a15, gend ) );
+
+            /* W[ j*N + 2*i] */
+            w0 = _mm512_add_pd( s0, s1 );
+            /* W[ (j + M/2)*N + i] */
+            w1 = _mm512_add_pd( s2, s3 );
+            /* W[((j-1+M/2)%(M/2))*N + i] */
+            w2 = _mm512_add_pd( s4, s5 );
+            /* W[ (( j-1+M/2)%(M/2)+M/2)*N + i] */
+            w3 = _mm512_add_pd( s6, s7 );
+
+            s1 = _mm512_fmadd_pd( w2, ah2,  _mm512_mul_pd( w3, ag2 ) );
+            s0 = _mm512_fmadd_pd( w1, ag0, s1 );
+            s3 = _mm512_fmadd_pd( w0, ah0, s0 );
+
+            _mm512_storeu_pd( &B[ 2*j*ldb + 2*i], s3 ); 
+
+            s1 = _mm512_fmadd_pd( w2, ah3,  _mm512_mul_pd( w3, ag3 ) );
+            s0 = _mm512_fmadd_pd( w1, ag1,  s1 );
+            s3 = _mm512_fmadd_pd( w0, ah1, s0 );
+
+            _mm512_storeu_pd( &B[ (2*j+1)*ldb + 2*i], s3 );
 
         }
     }

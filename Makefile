@@ -26,6 +26,7 @@ DHIMT=dhimt2_fma_reuse
 # dda4mt2_fma_reuse
 # dda4mt2_fma2_reuse
 # dda4mt2_fma2_reuse_gather
+# dda4mt2_fma512_reuse
 
 ## Possible DDI4MT values:
 # dhimt2_loop
@@ -36,9 +37,10 @@ DHIMT=dhimt2_fma_reuse
 # dhimt2_fma2
 # dhimt2_fma2_gather
 # ddi4mt2_fma_reuse
+# ddi4mt2_fma512_reuse
 
-DDA4MT=dda4mt2_initial
-DDI4MT=ddi4mt2_fma_reuse
+DDA4MT=dda4mt2_fma512_reuse
+DDI4MT=ddi4mt2_fma512_reuse
 
 
 
