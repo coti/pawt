@@ -12,7 +12,10 @@
  * $HEADER$
  */
 
+
+#ifndef __aarch64__
 #include <x86intrin.h>
+#endif // __aarch64__
 #include <math.h>
 
 #include "daub4.h"
@@ -124,7 +127,9 @@ void dda4mt2_loop( double* restrict A, double* restrict B, double* restrict W, i
     }
 
 }
- 
+
+#ifndef __aarch64__
+
 void dda4mt2_avx( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
@@ -1022,6 +1027,9 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
         _mm256_storeu_pd( &B[ (1*j + M/2)*ldb + i + N / 2 ], w );
     }
 }
+
+#endif // __aarch64__
+
 /*
 c     Compute 2D Daubechies D4 inverse transform of a matrix
 c
@@ -1083,6 +1091,7 @@ void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, i
     
 }
 
+#ifndef __aarch64__
 
 #ifdef  __cplusplus
 void ddi4mt2_avx( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
@@ -1867,4 +1876,5 @@ void ddi4mt2_fma512_reuse( double* restrict A, double* restrict B, double* restr
     }
 
 }
- 
+
+#endif // __aarch64__

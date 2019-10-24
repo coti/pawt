@@ -48,6 +48,7 @@ int main( int argc, char** argv ){
     implem_t direct[] = {
         FUNC_DEF( dda4mt2_initial )
         FUNC_DEF( dda4mt2_loop )
+#ifndef __aarch64__
         FUNC_DEF( dda4mt2_avx )
         FUNC_DEF( dda4mt2_avx_gather )
         FUNC_DEF( dda4mt2_fma )
@@ -56,10 +57,12 @@ int main( int argc, char** argv ){
         FUNC_DEF( dda4mt2_fma2_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse_gather )
         FUNC_DEF( dda4mt2_fma512_reuse )
+#endif // __aarch64__
        NULL
     };
     implem_t backward[] = {
         FUNC_DEF( ddi4mt2_loop )
+#ifndef __aarch64__
         FUNC_DEF( ddi4mt2_avx )
         FUNC_DEF( ddi4mt2_avx_gather )
         FUNC_DEF( ddi4mt2_fma )
@@ -68,6 +71,7 @@ int main( int argc, char** argv ){
         FUNC_DEF( ddi4mt2_fma2_gather )
         FUNC_DEF( ddi4mt2_fma_reuse )
         FUNC_DEF( ddi4mt2_fma512_reuse )
+#endif // __aarch64__
        NULL
     };
 
