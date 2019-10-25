@@ -14,7 +14,9 @@
 
 #include <string.h>
 
+#ifndef __aarch64__
 #include <x86intrin.h>
+#endif // __aarch64__
 
 /*
 c     Compute 2D Haar transform of a matrix
@@ -118,6 +120,8 @@ void dhamt2_loop( double* restrict A, double* restrict B, double* restrict W, in
     }
         
 }
+
+#ifndef __aarch64__
 
 /* TODO handle case when the matrix is too small */
      
@@ -470,6 +474,8 @@ void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int 
     }        
 }
 
+#endif // __aarch64__
+
 /*
 c     Compute 2D Haar inverse transform of a matrix
 c
@@ -520,6 +526,8 @@ void dhimt2_initial( double* restrict A, double* restrict B, double* restrict W,
     
 }
  
+#ifndef __aarch64__
+
 void dhimt2_fma_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
     int i, j;
     __m256d w, a1, a2;
@@ -670,6 +678,8 @@ void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     }
     
 }
+
+#endif // __aarch64__
 
 /*
 c     Compute 1D Haar direct transform of a matrix

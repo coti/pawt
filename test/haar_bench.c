@@ -47,20 +47,24 @@ int main( int argc, char** argv ){
     implem_t direct[] = {
         FUNC_DEF( dhamt2_initial )
         FUNC_DEF( dhamt2_loop )
+#ifndef __aarch64__
         FUNC_DEF( dhamt2_avx )
         FUNC_DEF( dhamt2_avx_gather )
         FUNC_DEF( dhamt2_sse )
         FUNC_DEF( dhamt2_fma )
         FUNC_DEF( dhamt2_fma_reuse )
         FUNC_DEF( dhamt2_fma512_reuse )
+#endif
         NULL
     };
     implem_t backward[] = {
         FUNC_DEF( dhimt2_initial )
+#ifndef __aarch64__
         FUNC_DEF( dhimt2_fma )
         FUNC_DEF( dhimt2_fma_gather )
         FUNC_DEF( dhimt2_fma_reuse )
         FUNC_DEF( dhimt2_fma512_reuse )
+#endif
         NULL
     };
 
