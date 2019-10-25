@@ -14,8 +14,12 @@
 
 #include <string.h>
 
-#ifndef __aarch64__
+#ifdef __x86_64__
 #include <x86intrin.h>
+#endif // __x86_64__
+
+#ifdef __aarch64__
+#include <arm_neon.h>
 #endif // __aarch64__
 
 /*
@@ -121,7 +125,7 @@ void dhamt2_loop( double* restrict A, double* restrict B, double* restrict W, in
         
 }
 
-#ifndef __aarch64__
+#ifdef __AVX__
 
 /* TODO handle case when the matrix is too small */
      
@@ -211,6 +215,10 @@ void dhamt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int ld
     
 }
  
+#endif // __AVX__
+
+#ifdef __SSE__
+
 void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
      int i, j;
      __m128d w, a1, a2;
@@ -255,6 +263,11 @@ void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int 
 
  }
  
+#endif // __SSE__
+
+
+#ifdef __FMA__
+
 /* TODO handle case when the matrix is too small */
      
 void dhamt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
@@ -428,6 +441,10 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     }        
 }
 
+#endif // __FMA__
+
+#ifdef __AVX512__
+
 /* Reuse the intermediate work AVX registers rather than storing in the W matrix. */
  
 void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
@@ -474,7 +491,7 @@ void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int 
     }        
 }
 
-#endif // __aarch64__
+#endif // __AVX512__
 
 /*
 c     Compute 2D Haar inverse transform of a matrix
@@ -526,7 +543,7 @@ void dhimt2_initial( double* restrict A, double* restrict B, double* restrict W,
     
 }
  
-#ifndef __aarch64__
+#ifdef __FMA__
 
 void dhimt2_fma_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
     int i, j;
@@ -642,6 +659,9 @@ void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     }
     
 }
+#endif // __FMA__
+
+#ifdef __AVX512__
 
  void dhimt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
     int i, j;
@@ -679,7 +699,7 @@ void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
     
 }
 
-#endif // __aarch64__
+#endif // __AVX512__
 
 /*
 c     Compute 1D Haar direct transform of a matrix
