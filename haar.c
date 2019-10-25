@@ -20,6 +20,7 @@
 
 #ifdef __aarch64__
 #include <arm_neon.h>
+#include "arm.h"
 #endif // __aarch64__
 
 /*
@@ -217,7 +218,7 @@ void dhamt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int ld
  
 #endif // __AVX__
 
-#ifdef __SSE__
+#if defined( __SSE__ ) || defined( __aarch64__ )
 
 void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
      int i, j;
@@ -263,7 +264,7 @@ void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int 
 
  }
  
-#endif // __SSE__
+#endif // __SSE__ || __aarch64__
 
 
 #ifdef __FMA__

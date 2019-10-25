@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <lapacke.h>
+//#include <lapacke.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>

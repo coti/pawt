@@ -47,10 +47,12 @@ int main( int argc, char** argv ){
     implem_t direct[] = {
         FUNC_DEF( dhamt2_initial )
         FUNC_DEF( dhamt2_loop )
+#if defined( __SSE__ ) || defined( __aarch64__ )
+        FUNC_DEF( dhamt2_sse )
+#endif // __SSE__ || __aarch64__
 #ifndef __aarch64__
         FUNC_DEF( dhamt2_avx )
         FUNC_DEF( dhamt2_avx_gather )
-        FUNC_DEF( dhamt2_sse )
         FUNC_DEF( dhamt2_fma )
         FUNC_DEF( dhamt2_fma_reuse )
         FUNC_DEF( dhamt2_fma512_reuse )
