@@ -48,6 +48,10 @@ int main( int argc, char** argv ){
     implem_t direct[] = {
         FUNC_DEF( dda4mt2_initial )
         FUNC_DEF( dda4mt2_loop )
+#if defined( __SSE__ ) || defined( __aarch64__ )
+        FUNC_DEF( dda4mt2_sse )
+        FUNC_DEF( dda4mt2_sse_reuse )
+#endif //  __SSE__ ||  __aarch64__ 
 #ifndef __aarch64__
         FUNC_DEF( dda4mt2_avx )
         FUNC_DEF( dda4mt2_avx_gather )
@@ -86,7 +90,7 @@ int main( int argc, char** argv ){
         return EXIT_FAILURE;
     }
 #else
-    long long t_start, t_end;
+    unsigned long long t_start, t_end;
 #endif
 
     if( argc < 2 ) {

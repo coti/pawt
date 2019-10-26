@@ -9,8 +9,10 @@ extern __inline__ long long rdtsc(void) {
   __asm__ volatile ("rdtsc" : "=a" (a), "=d" (d));
   return (d<<32) | a;
 #else
-  volatile unsigned cc;
-  asm volatile("mrs %0, cntvct_el0" : "=r"( cc ));
+  volatile unsigned long long cc;
+  //  asm volatile("mrs %0, cntvct_el0" : "=r"( cc ));
+  asm volatile ("isb; mrs %0, cntvct_el0" : "=r" (cc) );
+
   return cc;
 #endif // __aarch64__
 }
