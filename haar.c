@@ -264,6 +264,62 @@ void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int 
 
  }
  
+/* Reuse the intermediate work SSE registers rather than storing in the W matrix. */
+
+void dhamt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+     int i, j;
+     __m128d w, w1, w1m, w2, w2m, a1, a2, a3, a4;
+    const __m128d deux = _mm_set1_pd( 0.5 );
+    
+     /* TODO Gerer le probleme d'alignement de W pour remplacer le storeu par un store */
+    
+    /* dim 1 */
+
+    for( j = 0 ; j < M / 2 ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=2 ){ 
+
+            a1 = _mm_set_pd( A[2*j*lda + 2*i + 2], A[2*j*lda + 2*i] );
+            a2 = _mm_set_pd( A[2*j*lda + 2*i + 3], A[2*j*lda + 2*i + 1] );
+
+            a3 = _mm_set_pd( A[(2*j+1)*lda + 2*i + 2], A[(2*j+1)*lda + 2*i] );
+            a4 = _mm_set_pd( A[(2*j+1)*lda + 2*i + 3], A[(2*j+1)*lda + 2*i + 1] );
+
+	    /* lines: W1 = A[i][j] + A[i+1][j] = A1 + A2 */
+
+	    w1 =_mm_add_pd( a1, a2 );
+	    w1 = _mm_mul_pd( w1, deux );
+	    w1m =_mm_sub_pd( a1, a2 );
+	    w1m = _mm_mul_pd( w1m, deux );
+
+             /* lines: W2 = A[i][j+1] + A[i+1][j+1] = A3 + A4 */
+
+	    w2 =_mm_add_pd( a3, a4 );
+	    w2 = _mm_mul_pd( w2, deux );
+	    w2m =_mm_sub_pd( a3, a4 );
+	    w2m = _mm_mul_pd( w2m, deux );
+
+            /* columns: W = W1 + W2 = W[i][j] + W[j][j+1] */
+
+	    w = _mm_add_pd( w1, w2 );
+	    w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &B[ j*ldb + i ], w ); 
+
+	    w = _mm_add_pd( w1m, w2m );
+	    w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &B[ j*ldb + i + N/2], w );
+
+	    w = _mm_sub_pd( w1, w2 );
+	    w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &B[ (j+M/2)*ldb + i ], w ); 
+
+	    w = _mm_sub_pd( w1m, w2m );
+	    w = _mm_mul_pd( w, deux );
+            _mm_storeu_pd( &B[ (j+M/2)*ldb + i + N/2], w ); 
+        }
+    }
+
+}
+ 
 #endif // __SSE__ || __aarch64__
 
 

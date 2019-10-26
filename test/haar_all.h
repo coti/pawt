@@ -18,6 +18,7 @@ void dhamt2_initial( double* A, double* B, double* W, int M, int N, int lda, int
 void dhamt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 #if defined( __SSE__ ) || defined( __aarch64__ )
 void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dhamt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif //  __SSE__ ||  __aarch64__ 
 #ifndef __aarch64__
 void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );

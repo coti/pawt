@@ -49,6 +49,7 @@ int main( int argc, char** argv ){
         FUNC_DEF( dhamt2_loop )
 #if defined( __SSE__ ) || defined( __aarch64__ )
         FUNC_DEF( dhamt2_sse )
+        FUNC_DEF( dhamt2_sse_reuse )
 #endif // __SSE__ || __aarch64__
 #ifndef __aarch64__
         FUNC_DEF( dhamt2_avx )
