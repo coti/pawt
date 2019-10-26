@@ -599,7 +599,80 @@ void dhimt2_initial( double* restrict A, double* restrict B, double* restrict W,
     }
     
 }
+
+#if defined( __SSE__ ) || defined( __aarch64__ )
+
+void dhimt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+     int i, j;
+     __m128d w, a1, a2;
+    const __m128d sign = _mm_set_pd( -1, 1 );
+    const __m128d moinsun = _mm_set1_pd( -1 );
+    
+    /* dim 1 */
+
+    for( j = 0 ; j < M ; j++ ) {
+      for( i = 0 ; i < N / 2 ; i++ ){ 
+            a1 = _mm_set1_pd( A[j*lda + i] );
+            a2 = _mm_set1_pd( A[j*lda + i + N/2] );
+
+            w = _mm_add_pd( a1, _mm_mul_pd( a2, sign ) );
+            _mm_storeu_pd( &W[ j*ldb + 2*i], w );             
+        }
+   }
+
+    /* dim 2 */
+
+    for( j = 0 ; j < M/2  ; j++ ){ 
+        for( i = 0 ; i < N/2 ; i++ ){
+            a1 = _mm_load_pd( &W[ j * lda + 2*i] );
+            a2 = _mm_load_pd( &W[ ( j + M/2 ) * lda + 2*i ] );
+	    
+	    w = _mm_add_pd( a1, a2 );
+	    _mm_storeu_pd( &B[ 2*j*N + 2*i ], w );
+
+	    w =_mm_add_pd( _mm_mul_pd( a2, moinsun ), a1 );
+	    _mm_storeu_pd( &B[ (2*j+1)*N + 2*i ], w );
+        }
+    }
+ }
  
+/* Reuse the intermediate work SSE registers rather than storing in the W matrix. */
+
+void dhimt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
+     int i, j;
+     __m128d w, w1, w1m, w2, w2m, a1, a2, a3, a4;
+    const __m128d sign = _mm_set_pd(  -1, 1 );
+    const __m128d moinsun = _mm_set1_pd( -1 );
+    
+    for( j = 0 ; j < M / 2 ; j++ ) {
+        for( i = 0 ; i < N / 2 ; i+=2 ){ 
+
+            a1 = _mm_set1_pd( A[j*lda + i] );
+            a2 = _mm_set1_pd( A[j*lda + i + N/2] );
+            a3 = _mm_set1_pd( A[( j + M/2 )*lda + i] );
+            a4 = _mm_set1_pd( A[( j + M/2 )*lda + i + N/2] );
+
+            /* Dim 1 */
+            
+            w1  = _mm_add_pd( _mm_mul_pd( a2, sign ), a1 );
+            w1m = _mm_add_pd( _mm_mul_pd( a4, sign ), a3 );
+
+            /* Dim 2 */
+
+            w2  = _mm_add_pd( w1, w1m );
+            w2m = _mm_add_pd( _mm_mul_pd( w1m, moinsun ), w1 );
+
+            /* Store */
+            
+            _mm_storeu_pd( &B[ 2*j*N + 2*i ], w2 );
+            _mm_storeu_pd( &B[ (2*j+1)*N + 2*i ], w2m );
+	}
+    }
+
+}
+ 
+#endif // __SSE__ || __aarch64__
+
 #ifdef __FMA__
 
 void dhimt2_fma_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
