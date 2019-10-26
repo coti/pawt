@@ -20,14 +20,18 @@ void dhamt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ld
 void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhamt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif //  __SSE__ ||  __aarch64__ 
-#ifndef __aarch64__
+#ifdef __AVX__
 void dhamt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhamt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+#endif // __AVX__
+#ifdef __AVX2__
 void dhamt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhamt2_fma_block( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+#endif // __AVX2__
+#ifdef __AVX512F__
 void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-#endif // __aarch64__
+#endif // __AVX512F__
 
 /* Backward Haar transforms */
 
@@ -36,9 +40,11 @@ void dhimt2_initial( double* A, double* B, double* W, int M, int N, int lda, int
 void dhimt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhimt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif //  __SSE__ ||  __aarch64__ 
-#ifndef __aarch64__
+#ifdef __AVX2__
 void dhimt2_fma_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhimt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+#endif // __AVX2__
+#ifdef __AVX512F__
 void dhimt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-#endif // __aarch64__
+#endif // __AVX512F__

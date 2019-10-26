@@ -489,7 +489,7 @@ void dhamt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
 
 #endif // __FMA__
 
-#ifdef __AVX512__
+#ifdef __AVX512F__
 
 /* Reuse the intermediate work AVX registers rather than storing in the W matrix. */
  
@@ -537,7 +537,7 @@ void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int 
     }        
 }
 
-#endif // __AVX512__
+#endif // __AVX512F__
 
 /*
 c     Compute 2D Haar inverse transform of a matrix
@@ -780,7 +780,7 @@ void dhimt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda
 }
 #endif // __FMA__
 
-#ifdef __AVX512__
+#ifdef __AVX512F__
 
  void dhimt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb ) {
     int i, j;
