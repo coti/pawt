@@ -237,13 +237,6 @@ void dhamt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int 
             w = _mm_mul_pd( w, deux );
             _mm_storeu_pd( &W[ j*ldb + i], w );             
         }
-         for( i = 0 ; i < N / 2 ; i+=2 ){ 
-            a1 = _mm_set_pd( A[j*lda + 2*i + 2], A[j*lda + 2*i] );
-            a2 = _mm_set_pd( A[j*lda + 2*i + 3], A[j*lda + 2*i + 1] );
-            w = _mm_sub_pd( a1, a2 );
-            w = _mm_mul_pd( w, deux );
-            _mm_storeu_pd( &W[ j*ldb + i + N/2], w ); 
-       }
    }
 
     /* dim 2 */
