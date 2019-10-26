@@ -32,6 +32,10 @@ void dhamt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int 
 /* Backward Haar transforms */
 
 void dhimt2_initial( double* A, double* B, double* W, int M, int N, int lda, int ldb );
+#if defined( __SSE__ ) || defined( __aarch64__ )
+void dhimt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dhimt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+#endif //  __SSE__ ||  __aarch64__ 
 #ifndef __aarch64__
 void dhimt2_fma_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dhimt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
