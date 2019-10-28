@@ -1330,7 +1330,14 @@ void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, i
     
 }
 
-#ifndef __aarch64__
+#if defined( __SSE__ ) || defined( __aarch64__ )
+
+void ddi4mt2_sse( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+}
+
+#endif // __SSE__ || __aarch64__
+
+#ifdef __AVX__
 
 #ifdef  __cplusplus
 void ddi4mt2_avx( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
@@ -1551,9 +1558,11 @@ void ddi4mt2_avx_gather( double* restrict A, double* restrict B, double* restric
             
         }
     }
-
-
 }
+
+#endif // __AVX__
+
+#ifdef __AVX2__
 
 #ifdef  __cplusplus
 void ddi4mt2_fma( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
@@ -2019,6 +2028,10 @@ void ddi4mt2_fma_reuse( double* restrict A, double* restrict B, double* restrict
     }
 
 }
+
+#endif // __AVX2__
+
+#ifdef __AVX512F__
  
  #ifdef  __cplusplus
 void ddi4mt2_fma512_reuse( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
@@ -2116,4 +2129,4 @@ void ddi4mt2_fma512_reuse( double* restrict A, double* restrict B, double* restr
 
 }
 
-#endif // __aarch64__
+#endif // __AVX512F__
