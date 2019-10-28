@@ -367,7 +367,7 @@ void dda4mt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int ld
 #endif // __SSE__ || __aarch64__
 
 
-#ifndef __aarch64__
+#ifdef __AVX__
 
 void dda4mt2_avx( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
     double h0, h1, h2, h3;
@@ -588,6 +588,10 @@ void dda4mt2_avx_gather( double* restrict A, double* restrict B, double* restric
     }
 
 }
+
+#endif // __AVX__
+
+#ifdef __AVX2__
 
 void dda4mt2_fma( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
     double h0, h1, h2, h3;
@@ -860,6 +864,10 @@ void dda4mt2_fma_reuse( double* restrict A, double* restrict B, double* restrict
 
 }
 
+#endif // __AVX2__
+
+#ifdef __AVX512F__
+
 void dda4mt2_fma512_reuse( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
     double h0, h1, h2, h3;
     double g0, g1, g2, g3;
@@ -969,6 +977,10 @@ void dda4mt2_fma512_reuse( double* restrict A, double* restrict B, double* restr
    }
 
 }
+
+#endif // __AVX512F__
+
+#ifdef __AVX2__
 
 /* Based on the order of operations performend by fma2 */
  
@@ -1267,7 +1279,7 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
     }
 }
 
-#endif // __aarch64__
+#endif // __AVX2__
 
 /*
 c     Compute 2D Daubechies D4 inverse transform of a matrix
