@@ -52,30 +52,42 @@ int main( int argc, char** argv ){
         FUNC_DEF( dda4mt2_sse )
         FUNC_DEF( dda4mt2_sse_reuse )
 #endif //  __SSE__ ||  __aarch64__ 
-#ifndef __aarch64__
+#ifdef __AVX__
         FUNC_DEF( dda4mt2_avx )
         FUNC_DEF( dda4mt2_avx_gather )
+#endif // __AVX__
+#ifdef __AVX2__
         FUNC_DEF( dda4mt2_fma )
         FUNC_DEF( dda4mt2_fma2)
         FUNC_DEF( dda4mt2_fma_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse_gather )
+#endif // __AVX2__
+#ifdef __AVX512F__
         FUNC_DEF( dda4mt2_fma512_reuse )
-#endif // __aarch64__
+#endif // __AVX512F__
        NULL
     };
     implem_t backward[] = {
         FUNC_DEF( ddi4mt2_loop )
-#ifndef __aarch64__
+#if defined( __SSE__ ) || defined( __aarch64__ )
+        FUNC_DEF( ddi4mt2_sse )
+        FUNC_DEF( ddi4mt2_sse_reuse )
+#endif //  __SSE__ ||  __aarch64__ 
+#ifdef __AVX__
         FUNC_DEF( ddi4mt2_avx )
         FUNC_DEF( ddi4mt2_avx_gather )
+#endif // __AVX__
+#ifdef __AVX2__
         FUNC_DEF( ddi4mt2_fma )
         FUNC_DEF( ddi4mt2_fma_gather )
         FUNC_DEF( ddi4mt2_fma2 )
         FUNC_DEF( ddi4mt2_fma2_gather )
         FUNC_DEF( ddi4mt2_fma_reuse )
+#endif // __AVX2__
+#ifdef __AVX512F__
         FUNC_DEF( ddi4mt2_fma512_reuse )
-#endif // __aarch64__
+#endif // __AVX512F__
        NULL
     };
 

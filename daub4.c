@@ -1345,6 +1345,176 @@ void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, i
 #if defined( __SSE__ ) || defined( __aarch64__ )
 
 void ddi4mt2_sse( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j;
+    
+     __m128d w, w0, w1, w2, w3, s0, s1;
+     __m128d a0, a1, a2, a3;
+    __m128d ah0, ah1, ah2, ah3;
+    __m128d ag0, ag1, ag2, ag3;
+    __m128d hbegin, hend, gbegin, gend;
+
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+    hbegin = _mm_set_pd( h1, h0);
+    gbegin = _mm_set_pd( g1, g0 );
+    hend = _mm_set_pd( h3, h2);
+    gend = _mm_set_pd( g3, g2 );
+    ah0 = _mm_set1_pd( h0 );
+    ah1 = _mm_set1_pd( h1 );
+    ah2 = _mm_set1_pd( h2 );
+    ah3 = _mm_set1_pd( h3 );
+    ag0 = _mm_set1_pd( g0 );
+    ag1 = _mm_set1_pd( g1 );
+    ag2 = _mm_set1_pd( g2 );
+    ag3 = _mm_set1_pd( g3 );
+
+    /* dim 1 */
+
+    for( j = 0 ; j < M ; j++ ) {
+      for( i = 0 ; i < N / 2 ; i++ ) {
+            a0 = _mm_set1_pd( A[ j*N + i] );
+            a1 = _mm_set1_pd( A[ j*N + N / 2 + i] );
+            a2 = _mm_set1_pd( A[ j*N + ( i - 1 + N/2 ) % (N/2) ] );
+            a3 = _mm_set1_pd( A[ j*N + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+            w0 = _mm_mul_pd( a0, hbegin );
+            w1 = _mm_mul_pd( a1, gbegin );
+            w2 = _mm_mul_pd( a2, hend );
+            w3 = _mm_mul_pd( a3, gend );
+        
+            s0 = _mm_add_pd( w0, w1);
+            s1 = _mm_add_pd( w2, w3);
+            w = _mm_add_pd( s0, s1 );
+          
+            _mm_storeu_pd( &W[ j*N + 2*i], w );             
+        }
+    }
+
+    /* dim 2 */
+    
+    for( j = 0 ; j < M / 2 ; j++ ) {
+        for( i = 0 ; i < N ; i+=2 ) {
+            a0 = _mm_loadu_pd( &W[ j*N + i] );
+            a1 = _mm_loadu_pd( &W[ (j + M/2)*N + i] );
+            a2 = _mm_loadu_pd( &W[((j-1+M/2)%(M/2))*N + i] );
+            a3 = _mm_loadu_pd( &W[ (( j-1+M/2)%(M/2)+M/2)*N + i] ); 
+            
+            w0 = _mm_mul_pd( a0, ah0 );
+            w1 = _mm_mul_pd( a1, ag0 );
+            w2 = _mm_mul_pd( a2, ah2 );
+            w3 = _mm_mul_pd( a3, ag2 );
+
+            s0 = _mm_add_pd( w0, w1);
+            s1 = _mm_add_pd( w2, w3);
+            w = _mm_add_pd( s0, s1 );
+            
+            _mm_storeu_pd( &B[ 2*j*ldb + i], w );             
+
+            w0 = _mm_mul_pd( a0, ah1 );
+            w1 = _mm_mul_pd( a1, ag1 );
+            w2 = _mm_mul_pd( a2, ah3 );
+            w3 = _mm_mul_pd( a3, ag3 );
+
+            s0 = _mm_add_pd( w0, w1);
+            s1 = _mm_add_pd( w2, w3);
+            w = _mm_add_pd( s0, s1 );
+            
+            _mm_storeu_pd( &B[ (2*j+1)*ldb + i], w );
+            
+        }
+    }
+}
+
+void ddi4mt2_sse_reuse( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j;
+    
+    __m128d w0, w1, w2, w3, s0, s1, s2;
+    __m128d a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, aa, ab, ac, ad, ae, af;
+    __m128d ah0, ah1, ah2, ah3;
+    __m128d ag0, ag1, ag2, ag3;
+    __m128d hbegin, hend, gbegin, gend;
+
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+    hbegin = _mm_set_pd( h1, h0);
+    gbegin = _mm_set_pd( g1, g0 );
+    hend = _mm_set_pd( h3, h2);
+    gend = _mm_set_pd( g3, g2 );
+    ah0 = _mm_set1_pd( h0 );
+    ah1 = _mm_set1_pd( h1 );
+    ah2 = _mm_set1_pd( h2 );
+    ah3 = _mm_set1_pd( h3 );
+    ag0 = _mm_set1_pd( g0 );
+    ag1 = _mm_set1_pd( g1 );
+    ag2 = _mm_set1_pd( g2 );
+    ag3 = _mm_set1_pd( g3 );
+
+    
+    for( j = 0 ; j < M/2 ; j++ ) {
+        for( i = 0 ; i < N/2 ; i++ ) {
+            a0 = _mm_set1_pd( A[ j*lda + i] );
+            a1 = _mm_set1_pd( A[ j*lda + N / 2 + i] );
+            a2 = _mm_set1_pd( A[ j*lda + ( i - 1 + N/2 ) % (N/2) ] );
+            a3 = _mm_set1_pd( A[ j*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+            a4 = _mm_set1_pd( A[ (j+M/2)*lda + i] );
+            a5 = _mm_set1_pd( A[ (j+M/2)*lda + N / 2 + i] );
+            a6 = _mm_set1_pd( A[ (j+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
+            a7 = _mm_set1_pd( A[ (j+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+            a8 = _mm_set1_pd( A[ ((j-1+M/2)%(M/2))*lda + i] );
+            a9 = _mm_set1_pd( A[ ((j-1+M/2)%(M/2))*lda + N / 2 + i] );
+            aa = _mm_set1_pd( A[ ((j-1+M/2)%(M/2))*lda + ( i - 1 + N/2 ) % (N/2) ] );
+            ab = _mm_set1_pd( A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+
+            ac = _mm_set1_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + i] );
+            ad = _mm_set1_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i] );
+            ae = _mm_set1_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
+            af = _mm_set1_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+            
+            /* w = ( a0 * hbegin + ( a1 * gbegin ) ) + ( a2 * ( hend + (a3 * gend))) */
+
+            /* W[ j*N + 2*i] */
+	    w0 = _mm_add_pd( _mm_add_pd( _mm_mul_pd( a0, hbegin ), _mm_mul_pd( a1, gbegin ) ),
+			     _mm_add_pd( _mm_mul_pd( a2, hend ), _mm_mul_pd( a3, gend ) ) );
+
+            /* W[ (j + M/2)*N + i] */
+	    w1 = _mm_add_pd( _mm_add_pd( _mm_mul_pd( a4, hbegin ), _mm_mul_pd( a5, gbegin ) ),
+			     _mm_add_pd( _mm_mul_pd( a6, hend ), _mm_mul_pd( a7, gend ) ) );
+
+            /* W[((j-1+M/2)%(M/2))*N + i] */
+	    w2 = _mm_add_pd( _mm_add_pd( _mm_mul_pd( a8, hbegin ), _mm_mul_pd( a9, gbegin ) ),
+			     _mm_add_pd( _mm_mul_pd( aa, hend ), _mm_mul_pd( ab, gend ) ) );
+	    
+            /* W[ (( j-1+M/2)%(M/2)+M/2)*N + i] */
+	    w3 = _mm_add_pd( _mm_add_pd( _mm_mul_pd( ac, hbegin ), _mm_mul_pd( ad, gbegin ) ),
+			     _mm_add_pd( _mm_mul_pd( ae, hend ), _mm_mul_pd( af, gend ) ) );
+	    
+	    
+	    s1 = _mm_add_pd( _mm_mul_pd( w2, ah2 ),  _mm_mul_pd( w3, ag2 ) );
+            s0 = _mm_add_pd( _mm_mul_pd( w1, ag0 ), s1 );
+            s2 = _mm_add_pd( _mm_mul_pd( w0, ah0 ), s0 );
+	    
+            _mm_storeu_pd( &B[ 2*j*ldb + 2*i], s2 ); 
+	    
+	    s1 = _mm_add_pd( _mm_mul_pd( w2, ah3 ),  _mm_mul_pd( w3, ag3 ) );
+            s0 = _mm_add_pd( _mm_mul_pd( w1, ag1 ),  s1 );
+            s2 = _mm_add_pd( _mm_mul_pd( w0, ah1 ), s0 );
+
+            _mm_storeu_pd( &B[ (2*j+1)*ldb + 2*i], s2 );
+
+        }
+    }
 }
 
 #endif // __SSE__ || __aarch64__
