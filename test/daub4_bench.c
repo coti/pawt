@@ -78,6 +78,8 @@ int main( int argc, char** argv ){
 #if defined( __SSE__ ) || defined( __aarch64__ )
         FUNC_DEF( ddi4mt2_sse )
         FUNC_DEF( ddi4mt2_sse_reuse )
+        FUNC_DEF( ddi4mt2_sse_peel )
+        FUNC_DEF( ddi4mt2_sse_reuse_peel )
 #endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
         FUNC_DEF( ddi4mt2_avx )

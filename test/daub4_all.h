@@ -28,6 +28,8 @@ void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, i
 #if defined( __SSE__ ) || defined( __aarch64__ )
 void ddi4mt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void ddi4mt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void ddi4mt2_sse_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void ddi4mt2_sse_reuse_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
 void ddi4mt2_avx( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
