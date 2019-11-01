@@ -18,6 +18,7 @@ void dda4mt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int ld
 void dda4mt2_fma_reuse_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma2_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma2_reuse_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dda4mt2_fma2_reuse_gather_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif // __AVX2__
 #ifdef __AVX512F__
 void dda4mt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );

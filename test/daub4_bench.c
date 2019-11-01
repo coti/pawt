@@ -66,6 +66,7 @@ int main( int argc, char** argv ){
         FUNC_DEF( dda4mt2_fma_reuse_peel )
         FUNC_DEF( dda4mt2_fma2_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse_gather )
+        FUNC_DEF( dda4mt2_fma2_reuse_gather_peel )
 #endif // __AVX2__
 #ifdef __AVX512F__
         FUNC_DEF( dda4mt2_fma512_reuse )
