@@ -17,6 +17,7 @@ void dda4mt2_fma2_reuse_gather( double*  A, double*  B, double*  W, int M, int N
 #endif // __AVX2__
 #ifdef __AVX512F__
 void dda4mt2_fma512_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dda4mt2_fma512_reuse_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif // __AVX512F__
 
 void ddi4mt2_loop( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );

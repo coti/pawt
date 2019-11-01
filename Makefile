@@ -39,12 +39,15 @@ DHIMT=dhimt2_fma_reuse
 # ddi4mt2_fma_reuse
 # ddi4mt2_fma512_reuse
 
-DDA4MT=dda4mt2_fma512_reuse
+DDA4MT=dda4mt2_avx2
 DDI4MT=ddi4mt2_fma512_reuse
 
+## Possible DDA6MT values:
+# dda6mt2_initial
+# dda6mt2_loop
+# dda6mt2_avx
 
-
-DDA6MT=dda6mt2_initial
+DDA6MT=dda6mt2_avx
 
 DDA8MT=dda8mt2_initial
 
@@ -52,7 +55,7 @@ DDA8MT=dda8mt2_initial
 #
 # Makefile, to compile the program
 #
-# Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+# Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13,
 #                Sorbonne-Paris-Cité. All rights reserved.
 # Author: see AUTHORS
 # Licence: GPL-3.0, see COPYING for details.
@@ -62,11 +65,11 @@ DDA8MT=dda8mt2_initial
 # $HEADER$
 
 ARCHOPT = -march=native
-ALIGNOPT = -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store 
+ALIGNOPT = -mno-avx256-split-unaligned-load -mno-avx256-split-unaligned-store
 CC = gcc
 CCOPT = -g -Wall -O3 -DWITHPAPI $(ARCHOPT) $(ALIGNOPT) -DDHAMT=$(DHAMT) -DDHIMT=$(DHIMT) -DDDA4MT=$(DDA4MT) -DDDI4MT=$(DDI4MT) -DDDA6MT=$(DDA6MT) -DDDA8MT=$(DDA8MT) -I$(HOME)/tools/include  -I/packages/papi/5.6.0/include
 LD = gcc
-LDOPT = 
+LDOPT =
 LIBS = -L$(HOME)/tools/lib -lopenblas -L/packages/papi/5.6.0/lib -lpapi
 
 all: minitest_daub6

@@ -2,7 +2,7 @@
  *
  * Calling program for the 2D Daubechies D6 transform dda6mt2.
  *
- * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+ * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13,
  *                Sorbonne-Paris-Cité. All rights reserved.
  * Author: see AUTHORS
  * Licence: GPL-3.0, see COPYING for details.
@@ -68,7 +68,7 @@ int main( int argc, char** argv ){
     long long t_start, t_end;
     int i;
 #endif
-    
+
     if( argc < 3 ) {
         M = DEFAULTM;
         N = DEFAULTN;
@@ -82,16 +82,16 @@ int main( int argc, char** argv ){
     memset( wor2, 0, M*N*sizeof( double ) );
 
     /* Ill-conditionned matrix */
-    
+
     //    dillrandom( mat, M, N, N, cond, work, wor2 );
         drandom( mat, M, N );
     //identity( mat, M, N );
         // printmatrixOctave( mat, M, N );
         //  printmatrixOctave( basarab, M, N );
     //printmatrix( mat, M, N );
-    
+
 #ifdef WITHPAPI
-        rc = PAPI_start_counters( events, NUM_EVENTS ); 
+        rc = PAPI_start_counters( events, NUM_EVENTS );
         if( rc  != PAPI_OK ){
             PAPI_perror( "Error starting the counters" );
         }
@@ -103,8 +103,9 @@ int main( int argc, char** argv ){
         DDA6MT( mat, work, wor2, M, N, N, N );
     }
     //    printmatrixOctave( work, M, N );
-    //         printmatrix( work, M, N );
-    
+    printmatrix( work, M, N );
+    printmatrix( wor2, M, N );
+
 #ifdef WITHPAPI
     PAPI_stop_counters( values, NUM_EVENTS );
     //    printf( "# M \t N \t PAPI_TOT_CYC \t PAPI_L2_DCM \t PAPI_L3_TCM \t PAPI_L1_LDM \t PAPI_L1_STM\n" );
