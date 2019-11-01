@@ -2,7 +2,7 @@
  *
  * Benchmarking program for the 2D Daubechies D4 transform dda4mt2.
  *
- * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13, 
+ * Copyright 2018 LIPN, CNRS UMR 7030, Université Paris 13,
  *                Sorbonne-Paris-Cité. All rights reserved.
  * Author: see AUTHORS
  * Licence: GPL-3.0, see COPYING for details.
@@ -51,15 +51,17 @@ int main( int argc, char** argv ){
 #if defined( __SSE__ ) || defined( __aarch64__ )
         FUNC_DEF( dda4mt2_sse )
         FUNC_DEF( dda4mt2_sse_reuse )
-#endif //  __SSE__ ||  __aarch64__ 
+#endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
         FUNC_DEF( dda4mt2_avx )
+        FUNC_DEF( dda4mt2_avx2 )
         FUNC_DEF( dda4mt2_avx_gather )
 #endif // __AVX__
 #ifdef __AVX2__
         FUNC_DEF( dda4mt2_fma )
         FUNC_DEF( dda4mt2_fma2)
         FUNC_DEF( dda4mt2_fma_reuse )
+        FUNC_DEF( dda4mt2_fma_reuse2 )
         FUNC_DEF( dda4mt2_fma2_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse_gather )
 #endif // __AVX2__
@@ -74,7 +76,7 @@ int main( int argc, char** argv ){
 #if defined( __SSE__ ) || defined( __aarch64__ )
         FUNC_DEF( ddi4mt2_sse )
         FUNC_DEF( ddi4mt2_sse_reuse )
-#endif //  __SSE__ ||  __aarch64__ 
+#endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
         FUNC_DEF( ddi4mt2_avx )
         FUNC_DEF( ddi4mt2_avx_gather )
@@ -117,7 +119,7 @@ int main( int argc, char** argv ){
     memset( wor2, 0, N*N*sizeof( double ) );
 
     /* Ill-conditionned matrix */
-    
+
     //    dillrandom( mat, N, N, N, cond, work, wor2 );
     drandom( mat, N, N );
 
@@ -132,7 +134,7 @@ int main( int argc, char** argv ){
     s = MINSIZE;
     previous = MINSIZE / 2;
     while( s < N ) {
-        
+
         for( i = 0 ; direct[i].func != NULL ; i++ ) {
             drandom( mat, s, s ); // re-init
             STARTCOUNTERS();
@@ -141,7 +143,7 @@ int main( int argc, char** argv ){
             }
             ENDCOUNTERS( direct[i].name );
         }
-        
+
         if( 1 == __builtin_popcount( s ) ) {
             s += previous;
         } else {
@@ -149,13 +151,13 @@ int main( int argc, char** argv ){
             previous *= 2;
         }
     }
-    
+
     /* Backward transform */
-    
+
     s = MINSIZE;
     previous = MINSIZE / 2;
     while( s < N ) {
-        
+
         for( i = 0 ; backward[i].func != NULL ; i++ ) {
             drandom( work, s, s ); // re-init
             STARTCOUNTERS();
@@ -164,7 +166,7 @@ int main( int argc, char** argv ){
             }
             ENDCOUNTERS( backward[i].name );
         }
-        
+
         if( 1 == __builtin_popcount( s ) ) {
             s += previous;
         } else {
@@ -178,4 +180,3 @@ int main( int argc, char** argv ){
     free( wor2 );
     return EXIT_SUCCESS;
 }
-
