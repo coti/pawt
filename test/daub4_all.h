@@ -2,18 +2,20 @@ void dda4mt2_initial( double* A, double* B, double* W, int M, int N, int lda, in
 void dda4mt2_loop( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 #if defined( __SSE__ ) || defined( __aarch64__ )
 void dda4mt2_sse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dda4mt2_sse_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_sse_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dda4mt2_sse_reuse_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
 void dda4mt2_avx( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dda4mt2_avx2( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dda4mt2_avx_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_avx_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif // __AVX__
 #ifdef __AVX2__
 void dda4mt2_fma( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma2( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
-void dda4mt2_fma_reuse2( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
+void dda4mt2_fma_reuse_peel( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma2_reuse( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 void dda4mt2_fma2_reuse_gather( double*  A, double*  B, double*  W, int M, int N, int lda, int ldb );
 #endif // __AVX2__

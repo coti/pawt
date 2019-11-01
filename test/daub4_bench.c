@@ -50,18 +50,20 @@ int main( int argc, char** argv ){
         FUNC_DEF( dda4mt2_loop )
 #if defined( __SSE__ ) || defined( __aarch64__ )
         FUNC_DEF( dda4mt2_sse )
+        FUNC_DEF( dda4mt2_sse_peel )
         FUNC_DEF( dda4mt2_sse_reuse )
+        FUNC_DEF( dda4mt2_sse_reuse_peel )
 #endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
         FUNC_DEF( dda4mt2_avx )
-        FUNC_DEF( dda4mt2_avx2 )
+        FUNC_DEF( dda4mt2_avx_peel )
         FUNC_DEF( dda4mt2_avx_gather )
 #endif // __AVX__
 #ifdef __AVX2__
         FUNC_DEF( dda4mt2_fma )
         FUNC_DEF( dda4mt2_fma2)
         FUNC_DEF( dda4mt2_fma_reuse )
-        FUNC_DEF( dda4mt2_fma_reuse2 )
+        FUNC_DEF( dda4mt2_fma_reuse_peel )
         FUNC_DEF( dda4mt2_fma2_reuse )
         FUNC_DEF( dda4mt2_fma2_reuse_gather )
 #endif // __AVX2__
