@@ -4,12 +4,20 @@
 
 #ifndef WITHPAPI
 extern __inline__ long long rdtsc(void) {
+#ifndef __aarch64__
   long long a, d;
   __asm__ volatile ("rdtsc" : "=a" (a), "=d" (d));
   return (d<<32) | a;
-}
-#endif
+#else
+  volatile unsigned long long cc;
+  //  asm volatile("mrs %0, cntvct_el0" : "=r"( cc ));
+  asm volatile ("isb; mrs %0, cntvct_el0" : "=r" (cc) );
 
+  return cc;
+#endif // __aarch64__
+}
+#endif // WITHPAPI
+ 
 #ifdef WITHPAPI
 #define STARTCOUNTERS() do { \
         rc = PAPI_start_counters( events, NUM_EVENTS );  \

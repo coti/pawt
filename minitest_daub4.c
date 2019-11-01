@@ -21,6 +21,8 @@
 #endif
 
 #include "matrices.h"
+#include "test/benchmarking.h"
+
 
 /* If PAPI does not work (indicates 0 counters):
    echo 0 > /proc/sys/kernel/perf_event_paranoid
@@ -34,17 +36,6 @@
 
 void DDA4MT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 void DDI4MT( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
-
-
-#ifndef WITHPAPI
-extern __inline__ long long rdtsc(void) {
-  long long a, d;
-  __asm__ volatile ("rdtsc" : "=a" (a), "=d" (d));
-  return (d<<32) | a;
-}
-#endif
-
-
 
 int main( int argc, char** argv ){
 

@@ -47,20 +47,37 @@ int main( int argc, char** argv ){
     implem_t direct[] = {
         FUNC_DEF( dhamt2_initial )
         FUNC_DEF( dhamt2_loop )
+#if defined( __SSE__ ) || defined( __aarch64__ )
+        FUNC_DEF( dhamt2_sse )
+        FUNC_DEF( dhamt2_sse_reuse )
+#endif // __SSE__ || __aarch64__
+#ifdef __AVX__
         FUNC_DEF( dhamt2_avx )
         FUNC_DEF( dhamt2_avx_gather )
-        FUNC_DEF( dhamt2_sse )
+#endif // __AVX__
+#ifdef __AVX2__
         FUNC_DEF( dhamt2_fma )
         FUNC_DEF( dhamt2_fma_reuse )
+#endif // __AVX2__
+#ifdef __AVX512F__
         FUNC_DEF( dhamt2_fma512_reuse )
+#endif // ___AVX512__
         NULL
     };
     implem_t backward[] = {
         FUNC_DEF( dhimt2_initial )
+#if defined( __SSE__ ) || defined( __aarch64__ )
+        FUNC_DEF( dhimt2_sse )
+        FUNC_DEF( dhimt2_sse_reuse )
+#endif // __SSE__ || __aarch64__
+#ifdef __AVX2__
         FUNC_DEF( dhimt2_fma )
         FUNC_DEF( dhimt2_fma_gather )
         FUNC_DEF( dhimt2_fma_reuse )
+#endif // __AVX2__
+#ifdef __AVX512F__
         FUNC_DEF( dhimt2_fma512_reuse )
+#endif // __AVX512__
         NULL
     };
 
