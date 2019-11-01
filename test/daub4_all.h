@@ -34,6 +34,7 @@ void ddi4mt2_sse_reuse_peel( double*  A, double*  B, double*  W, int M, int N, i
 #endif //  __SSE__ ||  __aarch64__
 #ifdef __AVX__
 void ddi4mt2_avx( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
+void ddi4mt2_avx_peel( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 void ddi4mt2_avx_gather( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 #endif // __AVX__
 #ifdef __AVX2__

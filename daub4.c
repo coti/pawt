@@ -3633,7 +3633,150 @@ void ddi4mt2_avx( double* restrict A, double* restrict B, double* restrict W, in
             w = _mm256_add_pd( s0, s1 );
 
             _mm256_storeu_pd( &B[ (2*j+1)*ldb + i], w );
+        }
+    }
 
+}
+
+#ifdef  __cplusplus
+void ddi4mt2_avx_peel( double* A, double* B, double* W, int M, int N, int lda, int ldb ) {
+#else
+void ddi4mt2_avx_peel( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb ) {
+#endif
+    double h0, h1, h2, h3;
+    double g0, g1, g2, g3;
+    int i, j;
+
+     __m256d w, w0, w1, w2, w3, s0, s1;
+     __m256d a0, a1, a2, a3;
+    __m256d ah0, ah1, ah2, ah3;
+    __m256d ag0, ag1, ag2, ag3;
+    __m256d hbegin, hend, gbegin, gend;
+
+    dGetCoeffs4( &h0, &h1, &h2, &h3 );
+    g0 = h3;
+    g1 = -h2;
+    g2 = h1;
+    g3 = -h0;
+    hbegin = _mm256_set_pd( h1, h0, h1, h0);
+    gbegin = _mm256_set_pd( g1, g0, g1, g0 );
+    hend = _mm256_set_pd( h3, h2, h3, h2);
+    gend = _mm256_set_pd( g3, g2, g3, g2 );
+    ah0 = _mm256_set1_pd( h0 );
+    ah1 = _mm256_set1_pd( h1 );
+    ah2 = _mm256_set1_pd( h2 );
+    ah3 = _mm256_set1_pd( h3 );
+    ag0 = _mm256_set1_pd( g0 );
+    ag1 = _mm256_set1_pd( g1 );
+    ag2 = _mm256_set1_pd( g2 );
+    ag3 = _mm256_set1_pd( g3 );
+
+    /* dim 1 */
+
+    for( j = 0 ; j < M ; j++ ) {
+
+      /* Peeling : 1st columns */
+
+      a0 = _mm256_set_pd( A[ j*N + 1 ], A[ j*N + 1 ], A[ j*N ], A[ j*N ] );
+      a1 = _mm256_set_pd( A[ j*N + N / 2 + 1 ], A[ j*N + N / 2 + 1 ], A[ j*N + N / 2 ], A[ j*N + N / 2 ] );
+      a2 = _mm256_set_pd( A[ j*N ], A[ j*N ], A[ j*N + N/2 - 1 ], A[ j*N + N/2 - 1 ] );
+      a3 = _mm256_set_pd( A[ j*N + N / 2 ],  A[ j*N + N / 2 ], A[ j*N + N - 1 ], A[ j*N + N - 1 ] );
+
+      w0 = _mm256_mul_pd( a0, hbegin );
+      w1 = _mm256_mul_pd( a1, gbegin );
+      w2 = _mm256_mul_pd( a2, hend );
+      w3 = _mm256_mul_pd( a3, gend );
+      
+      s0 = _mm256_add_pd( w0, w1);
+      s1 = _mm256_add_pd( w2, w3);
+      w = _mm256_add_pd( s0, s1 );
+      
+      _mm256_storeu_pd( &W[ j*N ], w );
+      
+      /* Main loop */
+      
+      for( i = 2 ; i < N / 2 ; i+=2 ) {
+	a0 = _mm256_set_pd( A[j*N + i+1], A[j*N + i+1], A[j*N + i], A[j*N + i] );
+	a1 = _mm256_set_pd( A[ j*N + N / 2 + i+1], A[ j*N + N / 2 + i+1], A[ j*N + N / 2 + i], A[ j*N + N / 2 + i] );
+	a2 = _mm256_set_pd( A[j*N + i ], A[j*N + i ], A[j*N + i - 1 ], A[j*N + i - 1 ] );
+	a3 = _mm256_set_pd( A[ j*N + N / 2 + i ],  A[ j*N + N / 2 + i ], A[ j*N + N / 2 + i - 1 ], A[ j*N + N / 2 + i - 1 ] );
+	
+	w0 = _mm256_mul_pd( a0, hbegin );
+	w1 = _mm256_mul_pd( a1, gbegin );
+	w2 = _mm256_mul_pd( a2, hend );
+	w3 = _mm256_mul_pd( a3, gend );
+	
+	s0 = _mm256_add_pd( w0, w1);
+	s1 = _mm256_add_pd( w2, w3);
+	w = _mm256_add_pd( s0, s1 );
+	
+	_mm256_storeu_pd( &W[ j*N + 2*i], w );
+      }
+    }
+
+    /* dim 2 */
+
+    /* Peeling: 1st lines */
+
+    for( i = 0 ; i < N ; i+=4 ) {
+      a0 = _mm256_loadu_pd( &W[ i] );
+      a1 = _mm256_loadu_pd( &W[ ( M/2 )*N + i] );
+      a2 = _mm256_loadu_pd( &W[ ( M/2 - 1 )*N + i] );
+      a3 = _mm256_loadu_pd( &W[ ( M - 1 )*N + i] );
+      
+      w0 = _mm256_mul_pd( a0, ah0 );
+      w1 = _mm256_mul_pd( a1, ag0 );
+      w2 = _mm256_mul_pd( a2, ah2 );
+      w3 = _mm256_mul_pd( a3, ag2 );
+      
+      s0 = _mm256_add_pd( w0, w1);
+      s1 = _mm256_add_pd( w2, w3);
+      w = _mm256_add_pd( s0, s1 );
+      
+      _mm256_storeu_pd( &B[ i], w );
+      
+      w0 = _mm256_mul_pd( a0, ah1 );
+      w1 = _mm256_mul_pd( a1, ag1 );
+      w2 = _mm256_mul_pd( a2, ah3 );
+      w3 = _mm256_mul_pd( a3, ag3 );
+
+      s0 = _mm256_add_pd( w0, w1);
+      s1 = _mm256_add_pd( w2, w3);
+      w = _mm256_add_pd( s0, s1 );
+      
+      _mm256_storeu_pd( &B[ ldb + i], w );
+    }
+
+    /* Main loop */
+    
+    for( j = 1 ; j < M / 2 ; j++ ) {
+        for( i = 0 ; i < N ; i+=4 ) {
+            a0 = _mm256_loadu_pd( &W[ j*N + i] );
+            a1 = _mm256_loadu_pd( &W[ (j + M/2)*N + i] );
+            a2 = _mm256_loadu_pd( &W[((j-1+M/2)%(M/2))*N + i] );
+            a3 = _mm256_loadu_pd( &W[ (( j-1+M/2)%(M/2)+M/2)*N + i] );
+
+            w0 = _mm256_mul_pd( a0, ah0 );
+            w1 = _mm256_mul_pd( a1, ag0 );
+            w2 = _mm256_mul_pd( a2, ah2 );
+            w3 = _mm256_mul_pd( a3, ag2 );
+
+            s0 = _mm256_add_pd( w0, w1);
+            s1 = _mm256_add_pd( w2, w3);
+            w = _mm256_add_pd( s0, s1 );
+
+            _mm256_storeu_pd( &B[ 2*j*ldb + i], w );
+
+            w0 = _mm256_mul_pd( a0, ah1 );
+            w1 = _mm256_mul_pd( a1, ag1 );
+            w2 = _mm256_mul_pd( a2, ah3 );
+            w3 = _mm256_mul_pd( a3, ag3 );
+
+            s0 = _mm256_add_pd( w0, w1);
+            s1 = _mm256_add_pd( w2, w3);
+            w = _mm256_add_pd( s0, s1 );
+
+	    _mm256_storeu_pd( &B[ (2*j+1)*ldb + i], w );
         }
     }
 
