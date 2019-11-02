@@ -2657,48 +2657,45 @@ void dda4mt2_fma2_reuse_gather_peel( double* restrict A, double* restrict B, dou
             s0 = _mm256_fmadd_pd( w2, ah2, _mm256_mul_pd( w3, ah3 ) );
             s1 = _mm256_fmadd_pd( w1, ah1, s0 );
             w = _mm256_fmadd_pd( w0, ah0, s1 );
-            _mm256_storeu_pd( &B[ 1*j*ldb + i ], w );
+	    _mm256_storeu_pd( &B[ j*ldb + i ], w );
 
             s0 = _mm256_fmadd_pd( w2, ag2, _mm256_mul_pd( w3, ag3 ) );
             s1 = _mm256_fmadd_pd( w1, ag1, s0 );
             w = _mm256_fmadd_pd( w0, ag0, s1 );
-            _mm256_storeu_pd( &B[ (1*j + M/2)*ldb + i ], w );
+	    _mm256_storeu_pd( &B[ (j + M/2)*ldb + i ], w );
 
             s0 = _mm256_fmadd_pd( w2m, ah2, _mm256_mul_pd( w3m, ah3 ) );
             s1 = _mm256_fmadd_pd( w1m, ah1, s0 );
             w = _mm256_fmadd_pd( w0m, ah0, s1 );
-            _mm256_storeu_pd( &B[ 1*j*ldb + i + N/2 ], w );
+	    _mm256_storeu_pd( &B[ j*ldb + i + N/2 ], w );
 
             s0 = _mm256_fmadd_pd( w2m, ag2, _mm256_mul_pd( w3m, ag3 ) );
             s1 = _mm256_fmadd_pd( w1m, ag1, s0 );
             w = _mm256_fmadd_pd( w0m, ag0, s1 );
-            _mm256_storeu_pd( &B[ (1*j + M/2)*ldb + i + N / 2 ], w );
-
+	    _mm256_storeu_pd( &B[ (j + M/2)*ldb + i + N / 2 ], w );
         }
-
-        i = N/2 - 4;
 
         /* The last column cannot be done with gather because of the folding */
 
-        a0 = _mm256_i64gather_pd( &A[2*j*lda + 2*i], stride, 2 );
-        a1 = _mm256_i64gather_pd( &A[2*j*lda + 2*i + 1], stride, 2 );
-        a2 = _mm256_set_pd( A[ j*2*lda ],  A[ j*2*lda + 2*i + 6 ],  A[ j*2*lda + 2*i + 4 ],   A[ j*2*lda + 2*i + 2 ]);
-        a3 = _mm256_set_pd( A[ j*2*lda + 1 ],  A[ j*2*lda + 2*i + 7 ],  A[ j*2*lda + 2*i + 5 ],   A[ j*2*lda + 2*i + 3 ] );
+        a0 = _mm256_i64gather_pd( &A[2*j*lda + N - 8], stride, 2 );
+        a1 = _mm256_i64gather_pd( &A[2*j*lda + N - 7], stride, 2 );
+        a2 = _mm256_set_pd( A[ j*2*lda ],  A[ j*2*lda + N - 2 ],  A[ j*2*lda + N - 4 ],   A[ j*2*lda + N - 6 ]);
+        a3 = _mm256_set_pd( A[ j*2*lda + 1 ],  A[ j*2*lda + N - 1 ],  A[ j*2*lda + N - 3 ],   A[ j*2*lda + N - 5 ] );
 
-        a4 = _mm256_i64gather_pd( &A[(j*2+1)*lda + 2*i], stride, 2 );
-        a5 = _mm256_i64gather_pd( &A[(j*2+1)*lda + 2*i + 1], stride, 2 );
-        a6 = _mm256_set_pd( A[ (j*2+1)*lda ],  A[ (j*2+1)*lda + 2*i + 6 ],  A[ (j*2+1)*lda + 2*i + 4 ],   A[ (j*2+1)*lda + 2*i + 2 ]);
-        a7 = _mm256_set_pd( A[ (j*2+1)*lda + 1],  A[ (j*2+1)*lda + 2*i + 7],  A[ (j*2+1)*lda + 2*i + 5 ],   A[ (j*2+1)*lda + 2*i + 3 ] );
+        a4 = _mm256_i64gather_pd( &A[(j*2+1)*lda + N - 8], stride, 2 );
+        a5 = _mm256_i64gather_pd( &A[(j*2+1)*lda + N - 7], stride, 2 );
+        a6 = _mm256_set_pd( A[ (j*2+1)*lda ],  A[ (j*2+1)*lda + N - 2 ],  A[ (j*2+1)*lda + N - 4 ],   A[ (j*2+1)*lda + N - 6 ]);
+        a7 = _mm256_set_pd( A[ (j*2+1)*lda + 1],  A[ (j*2+1)*lda + N - 1 ],  A[ (j*2+1)*lda + N - 3 ],   A[ (j*2+1)*lda + N - 5 ] );
 
         a8 = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i], stride, 2 );
         a9 = _mm256_i64gather_pd( &A[(j*2+2)*lda + 2*i + 1], stride, 2 );
-        aa = _mm256_set_pd( A[ (j*2+2)*lda ],  A[ (j*2+2)*lda + 2*i + 6 ],  A[ (j*2+2)*lda + 2*i + 4 ],   A[ (j*2+2)*lda + 2*i + 2 ]);
-        ab = _mm256_set_pd( A[ (j*2+2)*lda + 1],  A[ (j*2+2)*lda + 2*i + 7 ],  A[ (j*2+2)*lda + 2*i + 5 ],   A[ (j*2+2)*lda + 2*i + 3 ] );
+        aa = _mm256_set_pd( A[ (j*2+2)*lda ],  A[ (j*2+2)*lda + N - 2 ],  A[ (j*2+2)*lda + N - 4 ],   A[ (j*2+2)*lda + N - 6 ]);
+        ab = _mm256_set_pd( A[ (j*2+2)*lda + 1],  A[ (j*2+2)*lda + N - 1 ],  A[ (j*2+2)*lda + N - 3 ],   A[ (j*2+2)*lda + N - 5 ] );
 
         ac = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i], stride, 2 );
         ad = _mm256_i64gather_pd( &A[(j*2+3)*lda + 2*i + 1], stride, 2 );
-        ae = _mm256_set_pd( A[ (j*2+3)*lda ],  A[ (j*2+3)*lda + 2*i + 6 ],  A[ (j*2+3)*lda + 2*i + 4 ],   A[ (j*2+3)*lda + 2*i + 2 ]);
-        af = _mm256_set_pd( A[ (j*2+3)*lda + 1],  A[ (j*2+3)*lda + 2*i + 7 ],  A[ (j*2+3)*lda + 2*i + 5 ],   A[ (j*2+3)*lda + 2*i + 3 ] );
+        ae = _mm256_set_pd( A[ (j*2+3)*lda ],  A[ (j*2+3)*lda + N - 2 ],  A[ (j*2+3)*lda + N - 4 ],   A[ (j*2+3)*lda + N - 6 ]);
+        af = _mm256_set_pd( A[ (j*2+3)*lda + 1],  A[ (j*2+3)*lda + N - 1 ],  A[ (j*2+3)*lda + N - 3 ],   A[ (j*2+3)*lda + N - 5 ] );
 
         /* Lines: W1 = A[i][j] + A[i+1][j] + A[i+2][j] + A[i+3][j] = A1 + A2 + A3 + A4 */
 
@@ -2739,25 +2736,25 @@ void dda4mt2_fma2_reuse_gather_peel( double* restrict A, double* restrict B, dou
         s0 = _mm256_fmadd_pd( w2, ah2, _mm256_mul_pd( w3, ah3 ) );
         s1 = _mm256_fmadd_pd( w1, ah1, s0 );
         w = _mm256_fmadd_pd( w0, ah0, s1 );
-        _mm256_storeu_pd( &B[ 1*j*ldb + i ], w );
+        _mm256_storeu_pd( &B[ j*ldb + N/2 - 4 ], w );
 
         s0 = _mm256_fmadd_pd( w2, ag2, _mm256_mul_pd( w3, ag3 ) );
         s1 = _mm256_fmadd_pd( w1, ag1, s0 );
         w = _mm256_fmadd_pd( w0, ag0, s1 );
-        _mm256_storeu_pd( &B[ (1*j + M/2)*ldb + i ], w );
+        _mm256_storeu_pd( &B[ (j + M/2)*ldb + N/2 - 4 ], w );
 
         s0 = _mm256_fmadd_pd( w2m, ah2, _mm256_mul_pd( w3m, ah3 ) );
         s1 = _mm256_fmadd_pd( w1m, ah1, s0 );
         w = _mm256_fmadd_pd( w0m, ah0, s1 );
-        _mm256_storeu_pd( &B[ 1*j*ldb + i + N/2 ], w );
+        _mm256_storeu_pd( &B[ j*ldb + N - 4 ], w );
 
         s0 = _mm256_fmadd_pd( w2m, ag2, _mm256_mul_pd( w3m, ag3 ) );
         s1 = _mm256_fmadd_pd( w1m, ag1, s0 );
         w = _mm256_fmadd_pd( w0m, ag0, s1 );
-        _mm256_storeu_pd( &B[ (1*j + M/2)*ldb + i + N / 2 ], w );
+        _mm256_storeu_pd( &B[ (j + M/2)*ldb + N - 4 ], w );
     }
 
-    /* Peeling */
+    /* Peeling: last line */
 
     for( i = 0 ; i < N / 2 - 4 ; i+=4 ){
       a0 = _mm256_i64gather_pd( &A[ (M - 2)*lda + 2*i], stride, 2 );
@@ -2838,29 +2835,27 @@ void dda4mt2_fma2_reuse_gather_peel( double* restrict A, double* restrict B, dou
       
     }
     
-    i = N/2 - 4;
-
     /* The last column cannot be done with gather because of the folding */
     
-    a0 = _mm256_i64gather_pd( &A[ 2*(M/2 - 1)*lda + 2*i], stride, 2 );
-    a1 = _mm256_i64gather_pd( &A[ 2*(M/2 - 1)*lda + 2*i + 1], stride, 2 );
-    a2 = _mm256_set_pd( A[ (M - 2)*lda ],  A[ (M - 2)*lda + 2*i + 6 ],  A[ (M - 2)*lda + 2*i + 4 ],   A[ (M - 2)*lda + 2*i + 2 ]);
-    a3 = _mm256_set_pd( A[ (M - 2)*lda + 1 ],  A[ (M - 2)*lda + 2*i + 7 ],  A[ (M - 2)*lda + 2*i + 5 ],   A[ ( M - 2)*lda + 2*i + 3 ] );
+    a0 = _mm256_i64gather_pd( &A[ (M - 2)*lda + N - 8], stride, 2 );
+    a1 = _mm256_i64gather_pd( &A[ (M - 2)*lda + N - 7], stride, 2 );
+    a2 = _mm256_set_pd( A[ (M - 2)*lda ],  A[ (M - 2)*lda + N - 2 ],  A[ (M - 2)*lda + N - 4 ],   A[ (M - 2)*lda + N - 6 ]);
+    a3 = _mm256_set_pd( A[ (M - 2)*lda + 1 ],  A[ (M - 2)*lda + N - 1 ],  A[ (M - 2)*lda + N - 3 ],   A[ (M - 2)*lda + N - 5 ] );
 
-    a4 = _mm256_i64gather_pd( &A[(M - 1)*lda + 2*i], stride, 2 );
-    a5 = _mm256_i64gather_pd( &A[(M - 1)*lda + 2*i + 1], stride, 2 );
-    a6 = _mm256_set_pd( A[ (M - 1)*lda ],  A[ (M - 1)*lda + 2*i + 6 ],  A[ (M - 1)*lda + 2*i + 4 ],   A[ (M - 1)*lda + 2*i + 2 ]);
-    a7 = _mm256_set_pd( A[ (M - 1)*lda + 1 ],  A[ (M - 1)*lda + 2*i + 7 ],  A[ (M - 1)*lda + 2*i + 5 ],   A[ (M - 1)*lda + 2*i + 3 ] );
+    a4 = _mm256_i64gather_pd( &A[(M - 1)*lda + N - 8], stride, 2 );
+    a5 = _mm256_i64gather_pd( &A[(M - 1)*lda + N - 7], stride, 2 );
+    a6 = _mm256_set_pd( A[ (M - 1)*lda ],  A[ (M - 1)*lda + N - 2 ],  A[ (M - 1)*lda + N - 4 ],   A[ (M - 1)*lda + N - 6 ]);
+    a7 = _mm256_set_pd( A[ (M - 1)*lda + 1 ],  A[ (M - 1)*lda + N - 1 ],  A[ (M - 1)*lda + N - 3 ],   A[ (M - 1)*lda + N - 5 ] );
 
-    a8 = _mm256_i64gather_pd( &A[ 2*i], stride, 2 );
-    a9 = _mm256_i64gather_pd( &A[2*i + 1], stride, 2 );
-    aa = _mm256_set_pd( A[ 0 ],  A[ 2*i + 6 ],  A[ 2*i + 4 ],   A[ 2*i + 2 ]);
-    ab = _mm256_set_pd( A[ 1 ],  A[ 2*i + 7 ],  A[ 2*i + 5 ],   A[ 2*i + 3 ] );
+    a8 = _mm256_i64gather_pd( &A[ N - 8 ], stride, 2 );
+    a9 = _mm256_i64gather_pd( &A[ N - 7 ], stride, 2 );
+    aa = _mm256_set_pd( A[ 0 ],  A[ N - 2 ],  A[ N - 4 ],   A[ N - 6 ]);
+    ab = _mm256_set_pd( A[ 1 ],  A[ N - 1 ],  A[ N - 3 ],   A[ N - 5 ] );
 
-    ac = _mm256_i64gather_pd( &A[ lda + 2*i], stride, 2 );
-    ad = _mm256_i64gather_pd( &A[ lda + 2*i + 1], stride, 2 );
-    ae = _mm256_set_pd( A[ lda ],  A[ lda + 2*i + 6 ],  A[ 2*i + 4 ],   A[ 2*i + 2 ]);
-    af = _mm256_set_pd( A[ lda + 1 ],  A[ lda + 2*i + 7 ],  A[ lda + 2*i + 5 ],   A[ lda + 2*i + 3 ] );
+    ac = _mm256_i64gather_pd( &A[ lda + N - 8], stride, 2 );
+    ad = _mm256_i64gather_pd( &A[ lda + N - 7], stride, 2 );
+    ae = _mm256_set_pd( A[ lda ],  A[ lda + N - 2 ], A[ lda + N - 4 ],  A[ lda + N - 6 ]);
+    af = _mm256_set_pd( A[ lda + 1 ],  A[ lda + N - 1 ], A[ lda + N - 3 ],  A[ lda + N - 5 ] );
     
     /* Lines: W1 = A[i][j] + A[i+1][j] + A[i+2][j] + A[i+3][j] = A1 + A2 + A3 + A4 */
     
@@ -2901,23 +2896,22 @@ void dda4mt2_fma2_reuse_gather_peel( double* restrict A, double* restrict B, dou
     s0 = _mm256_fmadd_pd( w2, ah2, _mm256_mul_pd( w3, ah3 ) );
     s1 = _mm256_fmadd_pd( w1, ah1, s0 );
     w = _mm256_fmadd_pd( w0, ah0, s1 );
-    _mm256_storeu_pd( &B[ ( M / 2 - 1 )*ldb + i ], w );
+    _mm256_storeu_pd( &B[ ( M / 2 - 1 )*ldb + N / 2 - 4 ], w );
     
     s0 = _mm256_fmadd_pd( w2, ag2, _mm256_mul_pd( w3, ag3 ) );
     s1 = _mm256_fmadd_pd( w1, ag1, s0 );
     w = _mm256_fmadd_pd( w0, ag0, s1 );
-    _mm256_storeu_pd( &B[ ( M - 1 )*ldb + i ], w );
+    _mm256_storeu_pd( &B[ ( M - 1 )*ldb + N / 2 - 4 ], w );
     
     s0 = _mm256_fmadd_pd( w2m, ah2, _mm256_mul_pd( w3m, ah3 ) );
     s1 = _mm256_fmadd_pd( w1m, ah1, s0 );
     w = _mm256_fmadd_pd( w0m, ah0, s1 );
-    _mm256_storeu_pd( &B[ ( M / 2 - 1 )*ldb + i + N/2 ], w );
+    _mm256_storeu_pd( &B[ ( M / 2 - 1 )*ldb + N - 4 ], w );
     
     s0 = _mm256_fmadd_pd( w2m, ag2, _mm256_mul_pd( w3m, ag3 ) );
     s1 = _mm256_fmadd_pd( w1m, ag1, s0 );
     w = _mm256_fmadd_pd( w0m, ag0, s1 );
-    _mm256_storeu_pd( &B[ (M - 1)*ldb + i + N / 2 ], w );
-    
+    _mm256_storeu_pd( &B[ (M - 1)*ldb + N - 4 ], w );
 }
 
 #endif // __AVX2__
