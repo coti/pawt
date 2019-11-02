@@ -4597,82 +4597,63 @@ void ddi4mt2_fma_reuse_peel( double* restrict A, double* restrict B, double* res
       for( i = 2 ; i < N/2 ; i+=2 ) {
 
 	a0 = _mm256_set_pd( A[ j*lda + i+1 ], A[ j*lda + i+1 ], A[ j*lda + i ], A[ j*lda + i ] );
-a1 = _mm256_set_pd( A[ j*lda + N/2 + i + 1 ], A[ j*lda + N/2 + i + 1 ], A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i ] );
-a2 = _mm256_set_pd( A[ j*lda + i ], A[ j*lda + i ], A[ j*lda + i - 1 ], A[ j*lda + i - 1 ] );
-a3 = _mm256_set_pd( A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i - 1 ], A[ j*lda + N/2 + i - 1 ] );
-a4 = _mm256_set_pd( A[ (j+M/2)*lda + i+1 ], A[ (j+M/2)*lda + i+1 ], A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i ] );
-a5 = _mm256_set_pd( A[ (j+M/2)*lda + N/2 + i + 1 ], A[ (j+M/2)*lda + N/2 + i + 1 ], A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i ] );
-a6 = _mm256_set_pd( A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i - 1 ], A[ (j+M/2)*lda + i - 1 ] );
-a7 = _mm256_set_pd( A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i - 1 ], A[ (j+M/2)*lda + N/2 + i - 1 ] );
-a8 = _mm256_set_pd( A[ (j-1)*lda + i+1 ], A[ (j-1)*lda + i+1 ], A[ (j-1)*lda + i ], A[ (j-1)*lda + i ] );
-a9 = _mm256_set_pd( A[ (j-1)*lda + N/2 + i + 1 ], A[ (j-1)*lda + N/2 + i + 1 ], A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i ] );
-a10 = _mm256_set_pd( A[ (j-1)*lda + i ], A[ (j-1)*lda + i ], A[ (j-1)*lda + i - 1 ], A[ (j-1)*lda + i - 1 ] );
-a11 = _mm256_set_pd( A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i - 1 ], A[ (j-1)*lda + N/2 + i - 1 ] );
-a12 = _mm256_set_pd( A[ (j-1+M/2)*lda + i+1 ], A[ (j-1+M/2)*lda + i+1 ], A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i ] );
-a13 = _mm256_set_pd( A[ (j-1+M/2)*lda + N/2 + i + 1 ], A[ (j-1+M/2)*lda + N/2 + i + 1 ], A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i ] );
-a14 = _mm256_set_pd( A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i - 1 ], A[ (j-1+M/2)*lda + i - 1 ] );
-a15 = _mm256_set_pd( A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i - 1 ], A[ (j-1+M/2)*lda + N/2 + i - 1 ] );
-
-	/*
-	a0 = _mm256_set_pd( A[j*lda + (i+1)], A[j*lda + (i+1)], A[j*lda + i], A[j*lda + i] );
-	a1 = _mm256_set_pd( A[ j*lda + N / 2 + (i+1)], A[ j*lda + N / 2 + (i+1)], A[ j*lda + N / 2 + i], A[ j*lda + N / 2 + i] );
-	a2 = _mm256_set_pd( A[j*lda + i ], A[j*lda + i ], A[j*lda + i - 1 ], A[j*lda + i - 1 ] );
-	a3 = _mm256_set_pd( A[ j*lda + N / 2 + i ],  A[ j*lda + N / 2 + i ], A[ j*lda + N / 2 + i - 1 ], A[ j*lda + N / 2 + i - 1 ] );
+	a1 = _mm256_set_pd( A[ j*lda + N/2 + i + 1 ], A[ j*lda + N/2 + i + 1 ], A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i ] );
+	a2 = _mm256_set_pd( A[ j*lda + i ], A[ j*lda + i ], A[ j*lda + i - 1 ], A[ j*lda + i - 1 ] );
+	a3 = _mm256_set_pd( A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i - 1 ], A[ j*lda + N/2 + i - 1 ] );
 	
-	a4 = _mm256_set_pd( A[(j+M/2)*lda + (i+1)], A[(j+M/2)*lda + (i+1)], A[(j+M/2)*lda + i], A[(j+M/2)*lda + i] );
-	a5 = _mm256_set_pd( A[ (j+M/2)*lda + N / 2 + (i+1)], A[ (j+M/2)*lda + N / 2 + (i+1)], A[ (j+M/2)*lda + N / 2 + i], A[ (j+M/2)*lda + N / 2 + i] );
-	a6 = _mm256_set_pd( A[(j+M/2)*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[(j+M/2)*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[(j+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ], A[(j+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
-	a7 = _mm256_set_pd(  A[ (j+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ (j+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ (j+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ (j+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+	a4 = _mm256_set_pd( A[ (j+M/2)*lda + i+1 ], A[ (j+M/2)*lda + i+1 ], A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i ] );
+	a5 = _mm256_set_pd( A[ (j+M/2)*lda + N/2 + i + 1 ], A[ (j+M/2)*lda + N/2 + i + 1 ], A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i ] );
+	a6 = _mm256_set_pd( A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i - 1 ], A[ (j+M/2)*lda + i - 1 ] );
+	a7 = _mm256_set_pd( A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i - 1 ], A[ (j+M/2)*lda + N/2 + i - 1 ] );
 	
-	a8 = _mm256_set_pd( A[((j-1+M/2)%(M/2))*lda + (i+1)], A[((j-1+M/2)%(M/2))*lda + (i+1)], A[((j-1+M/2)%(M/2))*lda + i], A[((j-1+M/2)%(M/2))*lda + i] );
-	a9 = _mm256_set_pd( A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+1)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + (i+1)], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + i], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + i] );
-	a10 = _mm256_set_pd( A[((j-1+M/2)%(M/2))*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[((j-1+M/2)%(M/2))*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[((j-1+M/2)%(M/2))*lda + ( i - 1 + N/2 ) % (N/2) ], A[((j-1+M/2)%(M/2))*lda + ( i - 1 + N/2 ) % (N/2) ] );
-	a11 = _mm256_set_pd(  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ ((j-1+M/2)%(M/2))*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+	a8 = _mm256_set_pd( A[ (j-1)*lda + i+1 ], A[ (j-1)*lda + i+1 ], A[ (j-1)*lda + i ], A[ (j-1)*lda + i ] );
+	a9 = _mm256_set_pd( A[ (j-1)*lda + N/2 + i + 1 ], A[ (j-1)*lda + N/2 + i + 1 ], A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i ] );
+	a10 = _mm256_set_pd( A[ (j-1)*lda + i ], A[ (j-1)*lda + i ], A[ (j-1)*lda + i - 1 ], A[ (j-1)*lda + i - 1 ] );
+	a11 = _mm256_set_pd( A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i - 1 ], A[ (j-1)*lda + N/2 + i - 1 ] );
 	
-	a12 = _mm256_set_pd( A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+1)], A[(( j-1+M/2)%(M/2)+M/2)*lda + (i+1)], A[(( j-1+M/2)%(M/2)+M/2)*lda + i], A[(( j-1+M/2)%(M/2)+M/2)*lda + i] );
-	a13 = _mm256_set_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+1)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+1)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i] );
-	a14 = _mm256_set_pd( A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
-	a15 = _mm256_set_pd(  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
-	*/
+	a12 = _mm256_set_pd( A[ (j-1+M/2)*lda + i+1 ], A[ (j-1+M/2)*lda + i+1 ], A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i ] );
+	a13 = _mm256_set_pd( A[ (j-1+M/2)*lda + N/2 + i + 1 ], A[ (j-1+M/2)*lda + N/2 + i + 1 ], A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i ] );
+	a14 = _mm256_set_pd( A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i - 1 ], A[ (j-1+M/2)*lda + i - 1 ] );
+	a15 = _mm256_set_pd( A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i - 1 ], A[ (j-1+M/2)*lda + N/2 + i - 1 ] );
 
-            /* w = ( a0 * hbegin + ( a1 * gbegin ) ) + ( a2 * ( hend + (a3 * gend))) */
+	/* w = ( a0 * hbegin + ( a1 * gbegin ) ) + ( a2 * ( hend + (a3 * gend))) */
+	
+	s0 = _mm256_fmadd_pd( a0, hbegin,  _mm256_mul_pd( a1, gbegin ) );
+	s1 = _mm256_fmadd_pd( a2, hend,  _mm256_mul_pd( a3, gend ) );
+	
+	s2 = _mm256_fmadd_pd( a4, hbegin,  _mm256_mul_pd( a5, gbegin ) );
+	s3 = _mm256_fmadd_pd( a6, hend,  _mm256_mul_pd( a7, gend ) );
+	
+	s4 = _mm256_fmadd_pd( a8, hbegin,  _mm256_mul_pd( a9, gbegin ) );
+	s5 = _mm256_fmadd_pd( a10, hend,  _mm256_mul_pd( a11, gend ) );
+	
+	s6 = _mm256_fmadd_pd( a12, hbegin,  _mm256_mul_pd( a13, gbegin ) );
+	s7 = _mm256_fmadd_pd( a14, hend,  _mm256_mul_pd( a15, gend ) );
+	
+	/* W[ j*N + 2*i] */
+	w0 = _mm256_add_pd( s0, s1 );
+	/* W[ (j + M/2)*N + i] */
+	w1 = _mm256_add_pd( s2, s3 );
+	/* W[((j-1+M/2)%(M/2))*N + i] */
+	w2 = _mm256_add_pd( s4, s5 );
+	/* W[ (( j-1+M/2)%(M/2)+M/2)*N + i] */
+	w3 = _mm256_add_pd( s6, s7 );
+	
+	s1 = _mm256_fmadd_pd( w2, ah2,  _mm256_mul_pd( w3, ag2 ) );
+	s0 = _mm256_fmadd_pd( w1, ag0, s1 );
+	s3 = _mm256_fmadd_pd( w0, ah0, s0 );
 
-            s0 = _mm256_fmadd_pd( a0, hbegin,  _mm256_mul_pd( a1, gbegin ) );
-            s1 = _mm256_fmadd_pd( a2, hend,  _mm256_mul_pd( a3, gend ) );
-
-            s2 = _mm256_fmadd_pd( a4, hbegin,  _mm256_mul_pd( a5, gbegin ) );
-            s3 = _mm256_fmadd_pd( a6, hend,  _mm256_mul_pd( a7, gend ) );
-
-            s4 = _mm256_fmadd_pd( a8, hbegin,  _mm256_mul_pd( a9, gbegin ) );
-            s5 = _mm256_fmadd_pd( a10, hend,  _mm256_mul_pd( a11, gend ) );
-
-            s6 = _mm256_fmadd_pd( a12, hbegin,  _mm256_mul_pd( a13, gbegin ) );
-            s7 = _mm256_fmadd_pd( a14, hend,  _mm256_mul_pd( a15, gend ) );
-
-            /* W[ j*N + 2*i] */
-            w0 = _mm256_add_pd( s0, s1 );
-            /* W[ (j + M/2)*N + i] */
-            w1 = _mm256_add_pd( s2, s3 );
-            /* W[((j-1+M/2)%(M/2))*N + i] */
-            w2 = _mm256_add_pd( s4, s5 );
-            /* W[ (( j-1+M/2)%(M/2)+M/2)*N + i] */
-            w3 = _mm256_add_pd( s6, s7 );
-
-            s1 = _mm256_fmadd_pd( w2, ah2,  _mm256_mul_pd( w3, ag2 ) );
-            s0 = _mm256_fmadd_pd( w1, ag0, s1 );
-            s3 = _mm256_fmadd_pd( w0, ah0, s0 );
-
-            _mm256_storeu_pd( &B[ 2*j*ldb + 2*i], s3 );
-
-            s1 = _mm256_fmadd_pd( w2, ah3,  _mm256_mul_pd( w3, ag3 ) );
-            s0 = _mm256_fmadd_pd( w1, ag1,  s1 );
-            s3 = _mm256_fmadd_pd( w0, ah1, s0 );
-
-            _mm256_storeu_pd( &B[ (2*j+1)*ldb + 2*i], s3 );
-	    
+	_mm256_storeu_pd( &B[ 2*j*ldb + 2*i], s3 );
+	
+	s1 = _mm256_fmadd_pd( w2, ah3,  _mm256_mul_pd( w3, ag3 ) );
+	s0 = _mm256_fmadd_pd( w1, ag1,  s1 );
+	s3 = _mm256_fmadd_pd( w0, ah1, s0 );
+	
+	_mm256_storeu_pd( &B[ (2*j+1)*ldb + 2*i], s3 );
+	
       }
-}
- 
+    }
+    
 }
  
 #endif // __AVX2__
