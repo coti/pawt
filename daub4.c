@@ -4595,10 +4595,29 @@ void ddi4mt2_fma_reuse_peel( double* restrict A, double* restrict B, double* res
       /* Main loop */
       
       for( i = 2 ; i < N/2 ; i+=2 ) {
+
+	a0 = _mm256_set_pd( A[ j*lda + i+1 ], A[ j*lda + i+1 ], A[ j*lda + i ], A[ j*lda + i ] );
+a1 = _mm256_set_pd( A[ j*lda + N/2 + i + 1 ], A[ j*lda + N/2 + i + 1 ], A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i ] );
+a2 = _mm256_set_pd( A[ j*lda + i ], A[ j*lda + i ], A[ j*lda + i - 1 ], A[ j*lda + i - 1 ] );
+a3 = _mm256_set_pd( A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i ], A[ j*lda + N/2 + i - 1 ], A[ j*lda + N/2 + i - 1 ] );
+a4 = _mm256_set_pd( A[ (j+M/2)*lda + i+1 ], A[ (j+M/2)*lda + i+1 ], A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i ] );
+a5 = _mm256_set_pd( A[ (j+M/2)*lda + N/2 + i + 1 ], A[ (j+M/2)*lda + N/2 + i + 1 ], A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i ] );
+a6 = _mm256_set_pd( A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i ], A[ (j+M/2)*lda + i - 1 ], A[ (j+M/2)*lda + i - 1 ] );
+a7 = _mm256_set_pd( A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i ], A[ (j+M/2)*lda + N/2 + i - 1 ], A[ (j+M/2)*lda + N/2 + i - 1 ] );
+a8 = _mm256_set_pd( A[ (j-1)*lda + i+1 ], A[ (j-1)*lda + i+1 ], A[ (j-1)*lda + i ], A[ (j-1)*lda + i ] );
+a9 = _mm256_set_pd( A[ (j-1)*lda + N/2 + i + 1 ], A[ (j-1)*lda + N/2 + i + 1 ], A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i ] );
+a10 = _mm256_set_pd( A[ (j-1)*lda + i ], A[ (j-1)*lda + i ], A[ (j-1)*lda + i - 1 ], A[ (j-1)*lda + i - 1 ] );
+a11 = _mm256_set_pd( A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i ], A[ (j-1)*lda + N/2 + i - 1 ], A[ (j-1)*lda + N/2 + i - 1 ] );
+a12 = _mm256_set_pd( A[ (j-1+M/2)*lda + i+1 ], A[ (j-1+M/2)*lda + i+1 ], A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i ] );
+a13 = _mm256_set_pd( A[ (j-1+M/2)*lda + N/2 + i + 1 ], A[ (j-1+M/2)*lda + N/2 + i + 1 ], A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i ] );
+a14 = _mm256_set_pd( A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i ], A[ (j-1+M/2)*lda + i - 1 ], A[ (j-1+M/2)*lda + i - 1 ] );
+a15 = _mm256_set_pd( A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i ], A[ (j-1+M/2)*lda + N/2 + i - 1 ], A[ (j-1+M/2)*lda + N/2 + i - 1 ] );
+
+	/*
 	a0 = _mm256_set_pd( A[j*lda + (i+1)], A[j*lda + (i+1)], A[j*lda + i], A[j*lda + i] );
 	a1 = _mm256_set_pd( A[ j*lda + N / 2 + (i+1)], A[ j*lda + N / 2 + (i+1)], A[ j*lda + N / 2 + i], A[ j*lda + N / 2 + i] );
-	a2 = _mm256_set_pd( A[j*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[j*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[j*lda + ( i - 1 + N/2 ) % (N/2) ], A[j*lda + ( i - 1 + N/2 ) % (N/2) ] );
-	a3 = _mm256_set_pd(  A[ j*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ j*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ j*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ j*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+	a2 = _mm256_set_pd( A[j*lda + i ], A[j*lda + i ], A[j*lda + i - 1 ], A[j*lda + i - 1 ] );
+	a3 = _mm256_set_pd( A[ j*lda + N / 2 + i ],  A[ j*lda + N / 2 + i ], A[ j*lda + N / 2 + i - 1 ], A[ j*lda + N / 2 + i - 1 ] );
 	
 	a4 = _mm256_set_pd( A[(j+M/2)*lda + (i+1)], A[(j+M/2)*lda + (i+1)], A[(j+M/2)*lda + i], A[(j+M/2)*lda + i] );
 	a5 = _mm256_set_pd( A[ (j+M/2)*lda + N / 2 + (i+1)], A[ (j+M/2)*lda + N / 2 + (i+1)], A[ (j+M/2)*lda + N / 2 + i], A[ (j+M/2)*lda + N / 2 + i] );
@@ -4614,6 +4633,7 @@ void ddi4mt2_fma_reuse_peel( double* restrict A, double* restrict B, double* res
 	a13 = _mm256_set_pd( A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+1)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + (i+1)], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + i] );
 	a14 = _mm256_set_pd( A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+1) - 1 + N/2 ) % (lda/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( (i+1) - 1 + N/2 ) % (N/2)], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ], A[(( j-1+M/2)%(M/2)+M/2)*lda + ( i - 1 + N/2 ) % (N/2) ] );
 	a15 = _mm256_set_pd(  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))],  A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( ( (i+1) - 1 + N/2) %(  N/2))], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )], A[ (( j-1+M/2)%(M/2)+M/2)*lda + N / 2 + ( i - 1 + N/2) % ( N / 2 )] );
+	*/
 
             /* w = ( a0 * hbegin + ( a1 * gbegin ) ) + ( a2 * ( hend + (a3 * gend))) */
 
