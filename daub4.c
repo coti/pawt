@@ -2674,19 +2674,17 @@ void dda4mt2_fma2_reuse_gather( double* restrict A, double* restrict B, double* 
 
         }
 
-        i = N/2 - 4;
-
         /* The last column cannot be done with gather because of the folding */
 
         a0 = _mm256_i64gather_pd( &A[2*j*lda + 2*i], stride, 2 );
         a1 = _mm256_i64gather_pd( &A[2*j*lda + 2*i + 1], stride, 2 );
         a2 = _mm256_set_pd( A[ (j*2)*lda + 0],  A[ (j*2)*lda + N - 2 ],  A[ (j*2)*lda + N - 4 ],   A[ (j*2)*lda + N - 6 ]);
-        a3 = _mm256_set_pd( A[ (j*2)*lda + 1],  A[ (j*2)*lda + N - 1 ],  A[ (j*2)*lda + N - 3 ],   A[ (j*2)*lda + N - 6 ] );
+        a3 = _mm256_set_pd( A[ (j*2)*lda + 1],  A[ (j*2)*lda + N - 1 ],  A[ (j*2)*lda + N - 3 ],   A[ (j*2)*lda + N - 5 ] );
 
         a4 = _mm256_i64gather_pd( &A[(j*2+1)*lda + 2*i], stride, 2 );
         a5 = _mm256_i64gather_pd( &A[(j*2+1)*lda + 2*i + 1], stride, 2 );
         a6 = _mm256_set_pd( A[ (j*2+1)*lda + 0],  A[ (j*2+1)*lda + N - 2 ],  A[ (j*2+1)*lda + N - 4 ],   A[ (j*2+1)*lda + N - 6 ]);
-        a7 = _mm256_set_pd( A[ (j*2+1)*lda + 1],  A[ (j*2+1)*lda + N - 1 ],  A[ (j*2+1)*lda + N - 3 ],   A[ (j*2+1)*lda + N - 6 ] );
+        a7 = _mm256_set_pd( A[ (j*2+1)*lda + 1],  A[ (j*2+1)*lda + N - 1 ],  A[ (j*2+1)*lda + N - 3 ],   A[ (j*2+1)*lda + N - 5 ] );
 
         a8 = _mm256_i64gather_pd( &A[((j*2+2 < M) ? (j*2+2) : (j*2 + 2 - M))*lda + 2*i], stride, 2 );
         a9 = _mm256_i64gather_pd( &A[((j*2+2 < M) ? (j*2+2) : (j*2 + 2 - M))*lda + 2*i + 1], stride, 2 );
