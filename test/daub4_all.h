@@ -43,6 +43,7 @@ void ddi4mt2_fma( double* restrict A, double* restrict B, double* restrict W, in
 void ddi4mt2_fma_gather( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 void ddi4mt2_fma_reuse( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 void ddi4mt2_fma_reuse_peel( double* A, double* B, double* W, int M, int N, int lda, int ldb );
+void ddi4mt2_fma_reuse_tern( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 void ddi4mt2_fma2( double* restrict A, double* restrict B, double* restrict W, int M, int N, int lda, int ldb );
 void ddi4mt2_fma2_gather( double* A, double* B, double* W, int M, int N, int lda, int ldb );
 #endif // __AVX2__
